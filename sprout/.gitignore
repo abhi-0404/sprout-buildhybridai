@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env.local
+.env*.local
+*.log
+.firebase/
+app/android/app/build/
+app/android/.gradle/
+app/ios/App/Pods/
+app/ios/DerivedData/
+.DS_Store
+app/e2e/screenshots/
+app/android/app/google-services.json
+app/ios/App/App/GoogleService-Info.plist
