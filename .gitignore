@@ -1,0 +1,15 @@
+
+# deps, builds and secrets
+node_modules/
+dist/
+.next/
+__pycache__/
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
