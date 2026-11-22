@@ -1,0 +1,54 @@
+:root {
+  --bg: #f6faf5; --surface: #ffffff; --text: #1d2a22; --muted: #5d6b62; --line: #dbe6dc;
+  --brand: #2f7d4f; --brand-soft: #e3f2e7; --cloud: #2e6bd1; --cloud-soft: #e5eefc;
+  --warm: #b26a00; --warm-soft: #fff3dc; --me: #2f7d4f; --me-text: #ffffff;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111713; --surface: #1a221d; --text: #e6efe8; --muted: #9db0a3; --line: #2b372f;
+    --brand: #5fbf84; --brand-soft: #1f3327; --cloud: #7aa7f5; --cloud-soft: #1c2738;
+    --warm: #f0b25a; --warm-soft: #33291a; --me: #3c8f5c;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); }
+.app { max-width: 820px; margin: 0 auto; padding: 0 16px 24px; min-height: 100vh; display: flex; flex-direction: column; }
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 0; }
+header h1 { margin: 0; font-size: 1.5rem; }
+nav { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: inherit; border: 1px solid var(--line); background: var(--surface); color: var(--text); border-radius: 999px; padding: 8px 14px; cursor: pointer; }
+button.active, form button[type=submit] { background: var(--brand); color: #fff; border-color: var(--brand); }
+button:disabled { opacity: .5; cursor: default; }
+main { flex: 1; display: flex; flex-direction: column; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.hint { color: var(--muted); font-size: .9rem; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.log { background: var(--bg); border-radius: 8px; padding: 10px; white-space: pre-wrap; font-size: .8rem; overflow-x: auto; }
+.setup label { display: flex; flex-direction: column; gap: 4px; margin: 10px 0; font-weight: 600; font-size: .9rem; }
+.setup input, .setup select { font: inherit; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+.kid { display: flex; flex-direction: column; flex: 1; gap: 8px; }
+.banner { background: var(--warm-soft); color: var(--warm); border-radius: 12px; padding: 8px 12px; font-size: .9rem; }
+.chat { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 8px 0; }
+.empty { color: var(--muted); text-align: center; padding: 40px 8px; font-size: 1.1rem; }
+.turn { display: flex; flex-direction: column; gap: 6px; }
+.bubble { max-width: 88%; padding: 12px 14px; border-radius: 18px; font-size: 1.15rem; line-height: 1.45; white-space: pre-wrap; }
+.bubble.me { align-self: flex-end; background: var(--me); color: var(--me-text); border-bottom-right-radius: 6px; }
+.bubble.sprout { align-self: flex-start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
+.thinking { color: var(--muted); }
+.badge { margin-top: 8px; font-size: .8rem; padding: 4px 10px; }
+.badge.device { background: var(--brand-soft); color: var(--brand); border-color: transparent; }
+.badge.cloud { background: var(--cloud-soft); color: var(--cloud); border-color: transparent; }
+.badge.script { background: var(--warm-soft); color: var(--warm); border-color: transparent; }
+.saw { margin-top: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: .9rem; }
+.saw h4 { margin: 0 0 4px; font-size: .8rem; color: var(--muted); }
+.saw p { margin: 0; background: var(--bg); padding: 8px; border-radius: 8px; }
+.steps { grid-column: 1 / -1; margin: 0; padding-left: 18px; color: var(--muted); }
+.composer { display: flex; gap: 8px; position: sticky; bottom: 0; background: var(--bg); padding: 8px 0; }
+.composer input { flex: 1; min-width: 0; font: inherit; font-size: 1.1rem; padding: 12px 16px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 0; }
+.stats div { background: var(--bg); border-radius: 12px; padding: 10px; }
+.stats dt { color: var(--muted); font-size: .8rem; }
+.stats dd { margin: 4px 0 0; font-size: 1.2rem; font-weight: 700; }
+@media (max-width: 560px) { .saw { grid-template-columns: 1fr; } .bubble { max-width: 96%; } }
+.demo-ribbon { background: var(--warm-soft); color: var(--warm); text-align: center; font-size: .8rem; padding: 6px 12px; }

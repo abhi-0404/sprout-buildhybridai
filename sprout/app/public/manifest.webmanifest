@@ -1,0 +1,12 @@
+{
+  "name": "Sprout: the AI you can hand your kid",
+  "short_name": "Sprout",
+  "description": "A safe, private AI helper for kids 6-12. Their identity never leaves the device.",
+  "start_url": "./#/kid",
+  "display": "standalone",
+  "background_color": "#f6faf5",
+  "theme_color": "#2f7d4f",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
