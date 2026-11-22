@@ -1,0 +1,24 @@
+{
+  "parameters": {
+    "cloud_model": {
+      "defaultValue": { "value": "gemini-3.8-flash" },
+      "description": "Cloud Gemini model used for big questions and the weekly note.",
+      "valueType": "STRING"
+    },
+    "allow_cloud": {
+      "defaultValue": { "value": "true" },
+      "description": "Kill switch: false stops all cloud calls. Can only tighten a parent's choice, never loosen it.",
+      "valueType": "BOOLEAN"
+    },
+    "referee_cloud_answers": {
+      "defaultValue": { "value": "true" },
+      "description": "On-device referee checks every cloud answer before the child sees it.",
+      "valueType": "BOOLEAN"
+    },
+    "max_device_chars": {
+      "defaultValue": { "value": "600" },
+      "description": "Longest question sent to the on-device model in one call.",
+      "valueType": "NUMBER"
+    }
+  }
+}
