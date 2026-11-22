@@ -1,0 +1,31 @@
+
+    #BuildHybridAI 2026: Build AI apps that run on-device and in the cloud with Firebase AI Logic.  - Devpost
+      We've detected that you are using an unsupported browser.  Please
+      upgrade your browser
+      to Internet Explorer 10 or higher.
+            Descend
+              Overview
+                  My projects
+              Participants (1981)
+              Resources
+              Rules
+                Project gallery
+                Updates
+                Discussions
+      2 days ago
+  #BuildHybridAI is open: Build Session tomorrow, Project ideas
+  Submissions for #BuildHybridAI 2026 are officially open. You have until Monday, November 30 at 2:00 PM PT to build and submit, with $30,000 in cash prizes on the line. Here are three things to know as you get started.
+📅 1. Join the Build Session tomorrow
+Thursday, November 12 at 10:00 AM PT / 1:00 PM ET
+Cynthia Jiang from the Firebase team will build a hybrid app live with Firebase AI Logic, then answer your questions. Expect about 30 minutes of code walkthrough and 15 minutes of open Q&A. It's beginner to intermediate; some Firebase familiarity helps.
+Register on…
+    Read more
+      4 days ago
+  Update: #BuildHybridAI submissions open Wednesday, Nov 11
+  Hello Builders,
+Submissions for #BuildHybridAI 2026 will open on Wednesday, November 11.
+What hasn't changed:
+⏰ Deadline: Mon, Nov 30 at 2:00 PM PT
+🎥 Build Session: Cynthia from the Firebase team builds a hybrid app live on Thursday, Nov 12 at 10:00 AM PT / 1:00 PM ET, then answers your questions. (Register on Luma)
+The Build Session lands the day after submissions open, so it's a great way to start your build.
+In the meantime: Join Discord to find teammates in #buildhybridai-chat and read up on Firebase AI Logic hybrid inference.
