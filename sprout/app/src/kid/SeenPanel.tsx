@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { Step, Turn } from '../pipeline/sprout';
 import type { ChildProfile } from '../pipeline/types';
 import { KIND_LABEL, highlightQuestion, splitSanitized } from './seen';
@@ -19,6 +20,35 @@ function refereeLine(r: NonNullable<Turn['referee']>): string {
   if (r.verdict === 'simplify') return `${who}: rewritten to be gentler`;
   if (r.verdict === 'block') return `${who}: swapped for a safer reply`;
   return `${who}: looks good`;
+}
+
+const SNIPPET_CHARS = 150;
+
+/** Before/after of the on-device guardian: the cloud's raw answer next to the one the child got. */
+function BeforeAfter({ original, rewritten, reason }: { original: string; rewritten: string; reason: string }) {
+  const [all, setAll] = useState(false);
+  // Count code points so an emoji is never cut in half.
+  const chars = Array.from(original);
+  const long = chars.length > SNIPPET_CHARS;
+  const shown = all || !long ? original : `${chars.slice(0, SNIPPET_CHARS).join('').trimEnd()}...`;
+  return (
+    <div className="k-ba" role="group" aria-label="What the guardian changed">
+      <div className="k-seen-row">
+        <span className="k-seen-who">Big brain said</span>
+        <p className="k-ba-before">{shown}</p>
+        {long && (
+          <button type="button" className="k-ba-more" aria-expanded={all} onClick={() => setAll(!all)}>
+            {all ? 'Show less' : 'Show all'}
+          </button>
+        )}
+      </div>
+      <div className="k-seen-row">
+        <span className="k-seen-who">Sprout's guardian made it</span>
+        <p className="k-ba-after">{rewritten}</p>
+      </div>
+      {reason && <p className="k-ba-why"><span aria-hidden="true">🛡️</span> Why: {reason}</p>}
+    </div>
+  );
 }
 
 export function SeenPanel({ turn, profile, id }: { turn: Turn; profile: ChildProfile; id: string }) {
@@ -68,6 +98,10 @@ export function SeenPanel({ turn, profile, id }: { turn: Turn; profile: ChildPro
             ))}
           </ul>
           {turn.referee && <p className="k-referee">🛡️ {refereeLine(turn.referee)}</p>}
+          {/* The raw answer was judged too heavy for the child, so it lives only behind the grown-ups fold. */}
+          {turn.referee?.verdict === 'simplify' && turn.referee.original && (
+            <BeforeAfter original={turn.referee.original} rewritten={turn.answer} reason={turn.referee.reason} />
+          )}
           {turn.redactions.length > 0 && (
             <p className="k-seen-note">Highlighted words were replaced on this device before anything was sent.</p>
           )}

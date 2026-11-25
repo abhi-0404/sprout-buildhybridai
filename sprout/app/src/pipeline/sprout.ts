@@ -63,7 +63,17 @@ export interface Turn {
   /** The safety guard could not run yet (offline, no device model); it runs before any cloud call. */
   guardPending?: boolean;
   distress?: { level: Exclude<DistressLevel, 'none'>; kind: DistressKind };
-  referee?: { verdict: RefereeVerdict; reason: string; where: Where };
+  referee?: {
+    verdict: RefereeVerdict;
+    reason: string;
+    where: Where;
+    /**
+     * The cloud answer before the guardian rewrote it (only for 'simplify'; never kept for
+     * 'block', which could be unsafe). It is cloud OUTPUT of a sanitized question and stays in
+     * this device's local turn history: it is never synced or sent anywhere.
+     */
+    original?: string;
+  };
   steps: Step[];
   /** A bigger answer is waiting for connectivity. */
   queued: boolean;
@@ -193,7 +203,7 @@ async function referee(
   if (verdict === 'simplify') {
     try {
       const s = await call(deps, steps, { task: 'simplify', mode, prompt: simplifyPrompt(answer, deps.profile.ageBand) }, '');
-      return { answer: s.text.trim(), referee: { verdict, reason, where } };
+      return { answer: s.text.trim(), referee: { verdict, reason, where, original: answer } };
     } catch {
       return { answer: BLOCKED_ANSWER_REPLY, referee: { verdict: 'block', reason: 'A gentler version could not be made', where } };
     }
@@ -229,7 +239,10 @@ async function bigAnswer(shell: Shell, deps: Deps, steps: Step[]): Promise<Turn>
   return {
     ...shell, route: 'cloud', answerWhere: 'cloud', queued: false,
     cloudSaw: shell.cloudSaw ?? sanitized,
-    answer: restore(checked.answer, redactions, deps.profile), referee: checked.referee,
+    answer: restore(checked.answer, redactions, deps.profile),
+    referee: checked.referee?.original !== undefined
+      ? { ...checked.referee, original: restore(checked.referee.original, redactions, deps.profile) }
+      : checked.referee,
   };
 }
 

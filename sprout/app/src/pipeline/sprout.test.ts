@@ -63,6 +63,44 @@ describe('ask', () => {
     expect(t.referee?.verdict).toBe('simplify');
   });
 
+  it('referee simplify keeps the original cloud answer next to the rewrite', async () => {
+    const ai = new FakeAi('available', {
+      answer: (r) => (r.mode === 'only_cloud' ? 'Raw cloud answer about the war.' : 'device'),
+      referee: () => JSON.stringify({ verdict: 'simplify', reason: 'too graphic' }),
+      simplify: () => 'Gentle version.',
+    });
+    const t = await ask('why did world war 2 happen?', deps(ai));
+    expect(t.answer).toBe('Gentle version.');
+    expect(t.referee?.original).toBe('Raw cloud answer about the war.');
+    expect(t.referee?.reason).toBe('too graphic');
+    // The ledger still counts it as a rewrite, and nothing new left the device.
+    expect(totals([t]).refereeRewrites).toBe(1);
+    // The raw answer is only ever referee INPUT on the device; no cloud prompt carries the rewrite.
+    expect(ai.cloudPrompts().some((p) => p.includes('Gentle version.'))).toBe(false);
+    expect(ai.calls.filter((c) => c.source === 'cloud').map((c) => c.req.task)).toEqual(['answer']);
+  });
+
+  it('referee original is restored for the parent and is absent on pass and block', async () => {
+    const restored = new FakeAi('available', {
+      answer: (r) => (r.mode === 'only_cloud' ? 'Hi [CHILD], wars are sad.' : 'device'),
+      referee: () => JSON.stringify({ verdict: 'simplify', reason: 'sad' }),
+      simplify: () => 'Hi [CHILD], gentler.',
+    });
+    const a = await ask("I'm Aarav, why did world war 2 happen?", deps(restored));
+    expect(a.referee?.original).toContain('Aarav');
+    expect(a.referee?.original).not.toContain('[');
+
+    const passed = await ask('why do cats purr?', deps(new FakeAi()));
+    expect(passed.referee?.verdict).toBe('pass');
+    expect(passed.referee?.original).toBeUndefined();
+
+    const blocked = await ask('why do cats purr?', deps(new FakeAi('available', {
+      referee: () => JSON.stringify({ verdict: 'block', reason: 'unsafe' }),
+    })));
+    expect(blocked.referee?.verdict).toBe('block');
+    expect(blocked.referee?.original).toBeUndefined();
+  });
+
   it('offline with a big question: quick device answer now, cloud later', async () => {
     const ai = new FakeAi();
     let online = false;

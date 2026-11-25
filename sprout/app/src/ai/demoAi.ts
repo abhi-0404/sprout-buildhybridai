@@ -21,6 +21,12 @@ const ANSWERS: [RegExp, string][] = [
   [/what is a|what's a|what are/i, 'Great question! That is something you can find all around us. Want me to tell you a fun fact about it?'],
 ];
 
+// What a big cloud model might say. Too heavy for a 7-year-old, so the on-device referee
+// rewrites it in Demo mode and the before/after is visible without Firebase.
+const CLOUD_RAW: [RegExp, string][] = [
+  [/\b(world wars?|wars? (in|of|between|happen)|ww ?(1|2|i|ii))\b/i,'World War 2 began in 1939 when Germany invaded Poland. Over six years more than 70 million people were killed, including millions of civilians, and whole cities were bombed into ruins. It ended in 1945 after the atomic bombs destroyed Hiroshima and Nagasaki.'],
+];
+
 const BIG = /\b(why|how|explain|story|happen)\b/i;
 const UNSAFE = /\b(weapon|gun|bomb|explode at home|drugs?|vape|hack|password|bypass|get around|adult video)\b/i;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -32,6 +38,8 @@ function message(prompt: string): string {
 function answerFor(q: string, where: 'device' | 'cloud'): string {
   const hit = ANSWERS.find(([re]) => re.test(q));
   const base = hit ? hit[1] : 'What a curious question! I think the best way to find out is to explore it together. What do you already know about it?';
+  const raw = where === 'cloud' ? CLOUD_RAW.find(([re]) => re.test(q)) : undefined;
+  if (raw && !/more simply|tell me more/i.test(q)) return raw[1];
   const first = base.split(/(?<=[.!?])\s+/)[0];
   // Follow-up buttons in the kid UI.
   if (/more simply/i.test(q)) return `Here it is in a tiny nutshell: ${first.charAt(0).toLowerCase()}${first.slice(1)}`;

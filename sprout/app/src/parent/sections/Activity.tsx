@@ -13,7 +13,7 @@ function Marked({ text, hidden }: { text: string; hidden: string[] }): ReactNode
   );
 }
 
-function Item({ turn, showText }: { turn: Turn; showText: boolean }) {
+function Item({ turn, showText, ageBand }: { turn: Turn; showText: boolean; ageBand: string }) {
   const [open, setOpen] = useState(false);
   const id = useId();
   const b = routeBadge(turn);
@@ -48,9 +48,16 @@ function Item({ turn, showText }: { turn: Turn; showText: boolean }) {
                 <div><h4>What was typed</h4><p><Marked text={turn.question} hidden={turn.redactions.map((r) => r.original)} /></p></div>
                 <div><h4>What the big brain saw</h4><p>{cloud.length ? (turn.sanitized || 'Nothing') : 'Nothing. This stayed on the device.'}</p></div>
               </div>
-              <div className="p-split">
-                <div><h4>Sprout answered</h4><p>{turn.answer}</p></div>
-              </div>
+              {turn.referee?.verdict === 'simplify' && turn.referee.original ? (
+                <div className="p-split">
+                  <div><h4>Big brain said</h4><p>{turn.referee.original}</p></div>
+                  <div><h4>Guardian made it right for ages {ageBand}</h4><p>{turn.answer}</p></div>
+                </div>
+              ) : (
+                <div className="p-split">
+                  <div><h4>Sprout answered</h4><p>{turn.answer}</p></div>
+                </div>
+              )}
             </>
           ) : (
             <p className="p-muted p-small">
@@ -108,7 +115,7 @@ export function Activity() {
         </section>
       ) : (
         <ul className="p-timeline">
-          {list.map((t) => <Item key={t.id} turn={t} showText={showText} />)}
+          {list.map((t) => <Item key={t.id} turn={t} showText={showText} ageBand={profile.ageBand} />)}
         </ul>
       )}
     </>

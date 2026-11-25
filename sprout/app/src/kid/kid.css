@@ -374,6 +374,17 @@
 .k-grownup summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
 .k-grownup[open] summary { margin-bottom: 6px; }
 
+/* Referee before/after: the big brain's raw answer next to the guardian's version. */
+.k-ba { margin-top: 12px; padding-top: 12px; border-top: 2px dashed var(--line); display: flex; flex-direction: column; gap: 10px; }
+.k-ba-before { color: var(--muted); font-size: 0.95rem !important; }
+.k-ba-after { background: var(--brand-soft) !important; color: var(--kid-brand-ink); font-weight: 700; }
+.k-ba-more {
+  align-self: flex-start; min-height: 36px; padding: 4px 12px; border-radius: 999px; border: 2px solid var(--line);
+  background: var(--surface); color: var(--text); font: inherit; font-size: 0.85rem; font-weight: 800; cursor: pointer;
+}
+.k-ba-more:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+.k-ba-why { margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--kid-brand-ink); overflow-wrap: anywhere; }
+
 /* Refinements after visual review. */
 .k-under { width: 100%; }
 .k-actions { width: 100%; }

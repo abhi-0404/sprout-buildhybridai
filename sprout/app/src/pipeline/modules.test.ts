@@ -98,6 +98,14 @@ describe('demo AI', () => {
     expect(simple.answerWhere).toBe('device');
     expect(big.answerWhere).toBe('cloud');
   }, 20000);
+  it('war question shows a real referee before/after in Demo mode', async () => {
+    const ai = new DemoAi({ deviceModel: true });
+    const t = await ask('why did world war 2 happen?', deps(ai));
+    expect(t.referee?.verdict).toBe('simplify');
+    expect(t.referee?.original).toContain('70 million');
+    expect(t.answer).not.toContain('70 million');
+    expect(t.referee?.original).not.toBe(t.answer);
+  }, 20000);
   it('without a device model everything goes through cloud-safe mode', async () => {
     const ai = new DemoAi({ deviceModel: false });
     const t = await ask('what is the moon made of?', deps(ai, { deviceReady: false }));
