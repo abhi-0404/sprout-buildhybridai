@@ -1,0 +1,262 @@
+# iOS build for Sprout, with no Mac needed.
+#
+# HONEST STATUS: this workflow has never run. It cannot be tested until it is pushed to GitHub, and
+# the Swift plugin (sprout/native/ios/SproutAiPlugin.swift) has never been compiled. Expect a few
+# iterations. A green "build-simulator" job is itself useful proof that the plugin compiles against
+# Firebase Apple SDK 12.x. Read the log artifact first if it fails.
+#
+# What it does (job build-simulator):
+#   1. Installs web dependencies from the committed lockfile.
+#   2. .github/scripts/prepare-ios.sh adds @capacitor/ios ON THE RUNNER ONLY (package.json is not
+#      committed back), builds the web app, runs `cap add ios`, wraps the Swift plugin in a local SPM
+#      package that depends on firebase-ios-sdk 12.13.0 ..< 13.0.0, and runs `cap sync ios`.
+#   3. xcodebuild builds for the iOS Simulator with code signing off.
+#
+# Job testflight is a SKETCH. It is skipped unless every Apple secret exists AND you start the
+# workflow by hand with "testflight" ticked. See the TODO block on that job.
+name: ios-build
+
+permissions:
+  contents: read
+
+on:
+  workflow_dispatch:
+    inputs:
+      testflight:
+        description: 'Also archive and upload to TestFlight (needs the Apple secrets)'
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - 'sprout/app/**'
+      - 'sprout/native/ios/**'
+      - '.github/scripts/prepare-ios.sh'
+      - '.github/workflows/ios-build.yml'
+
+concurrency:
+  group: ios-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-simulator:
+    runs-on: macos-26
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26.x
+        run: |
+          # The macos-26 image has several Xcode 26.x. Firebase 12.x needs 26.2 or newer.
+          if [ -d /Applications/Xcode_26.6.app ]; then
+            sudo xcode-select -s /Applications/Xcode_26.6.app
+          fi
+          xcodebuild -version
+          xcode-select -p
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.6.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: sprout/app/pnpm-lock.yaml
+
+      - name: Install web dependencies
+        working-directory: sprout/app
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate the iOS project and wire in the plugin and Firebase
+        run: bash .github/scripts/prepare-ios.sh
+
+      - name: Resolve Swift packages
+        working-directory: sprout/app/ios/App
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project App.xcodeproj -scheme App \
+            -skipPackagePluginValidation -skipMacroValidation
+
+      - name: Build for the iOS Simulator (unsigned)
+        working-directory: sprout/app/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/derived" \
+            -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            2>&1 | tee "$RUNNER_TEMP/xcodebuild.log"
+
+      - name: Upload build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcodebuild-log
+          path: ${{ runner.temp }}/xcodebuild.log
+          if-no-files-found: ignore
+
+      - name: Upload the simulator app
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sprout-simulator-app
+          path: ${{ runner.temp }}/derived/Build/Products/Debug-iphonesimulator/App.app
+          if-no-files-found: warn
+
+  # Secrets cannot be read in a job-level `if`, so this tiny job turns "do the secrets exist" into an output.
+  check-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      has_apple: ${{ steps.check.outputs.has_apple }}
+    steps:
+      - id: check
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+          P12_BASE64: ${{ secrets.P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          PROFILE_BASE64: ${{ secrets.PROFILE_BASE64 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          if [ -n "$ASC_KEY_ID" ] && [ -n "$ASC_ISSUER_ID" ] && [ -n "$ASC_KEY_P8_BASE64" ] \
+             && [ -n "$P12_BASE64" ] && [ -n "$P12_PASSWORD" ] && [ -n "$PROFILE_BASE64" ] && [ -n "$APPLE_TEAM_ID" ]; then
+            echo "has_apple=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_apple=false" >> "$GITHUB_OUTPUT"
+            echo "Apple secrets are not all set, the TestFlight job will be skipped."
+          fi
+
+  # TODO (needs YOUR Apple account, nothing below has been run):
+  #   1. Enroll in the Apple Developer Program, register App ID dev.sprout.kids with the App Attest
+  #      capability, and create the app in App Store Connect.
+  #   2. Make a Distribution certificate (.p12) and an App Store provisioning profile, and an App Store
+  #      Connect API key (Team key, App Manager access). Steps: research/overnight/ios.md section 2.
+  #   3. Add these repository secrets, all base64 where noted:
+  #        ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8_BASE64, P12_BASE64, P12_PASSWORD, PROFILE_BASE64,
+  #        APPLE_TEAM_ID, PROFILE_NAME (the profile's name), GOOGLE_SERVICE_INFO_PLIST_BASE64.
+  #   4. Add an App.entitlements file with the App Attest entitlement (com.apple.developer.devicecheck.appattest-environment
+  #      = production) to the App target, and the Firebase App Check provider factory from
+  #      sprout/native/ios/README.md step 8 (AppDelegate). The prepare script does not do this yet.
+  #   5. Expect to iterate: manual signing overrides applied to every target, including Swift packages,
+  #      can fail. If so, set signing per target in the project instead.
+  testflight:
+    needs: [check-secrets, build-simulator]
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.testflight && needs.check-secrets.outputs.has_apple == 'true' }}
+    runs-on: macos-26
+    timeout-minutes: 60
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+      APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      PROFILE_NAME: ${{ secrets.PROFILE_NAME }}
+      BUNDLE_ID: dev.sprout.kids
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 26.x
+        run: |
+          if [ -d /Applications/Xcode_26.6.app ]; then sudo xcode-select -s /Applications/Xcode_26.6.app; fi
+          xcodebuild -version
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.6.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: sprout/app/pnpm-lock.yaml
+
+      - name: Install web dependencies
+        working-directory: sprout/app
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate the iOS project
+        run: bash .github/scripts/prepare-ios.sh
+
+      - name: Add the Firebase config from a secret (it is gitignored)
+        env:
+          GOOGLE_SERVICE_INFO_PLIST_BASE64: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST_BASE64 }}
+        run: |
+          echo "$GOOGLE_SERVICE_INFO_PLIST_BASE64" | base64 --decode > sprout/app/ios/App/App/GoogleService-Info.plist
+          # TODO: the plist must also be added to the App target's resources (pbxproj), otherwise it is not bundled.
+
+      - name: Import the signing certificate and profile
+        env:
+          P12_BASE64: ${{ secrets.P12_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          PROFILE_BASE64: ${{ secrets.PROFILE_BASE64 }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/build.keychain-db"
+          KEYCHAIN_PASSWORD="$(uuidgen)"
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 3600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          echo "$P12_BASE64" | base64 --decode > "$RUNNER_TEMP/dist.p12"
+          security import "$RUNNER_TEMP/dist.p12" -k "$KEYCHAIN" -P "$P12_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          echo "$PROFILE_BASE64" | base64 --decode > "$HOME/Library/MobileDevice/Provisioning Profiles/sprout.mobileprovision"
+
+      - name: Archive
+        working-directory: sprout/app/ios/App
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project App.xcodeproj -scheme App -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/Sprout.xcarchive" \
+            -skipPackagePluginValidation -skipMacroValidation \
+            CODE_SIGN_STYLE=Manual \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            CODE_SIGN_IDENTITY="Apple Distribution" \
+            PROVISIONING_PROFILE_SPECIFIER="$PROFILE_NAME" \
+            PRODUCT_BUNDLE_IDENTIFIER="$BUNDLE_ID" \
+            CURRENT_PROJECT_VERSION="${{ github.run_number }}" \
+            2>&1 | tee "$RUNNER_TEMP/archive.log"
+
+      - name: Export the IPA
+        run: |
+          cat > "$RUNNER_TEMP/ExportOptions.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>signingStyle</key><string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict><key>${BUNDLE_ID}</key><string>${PROFILE_NAME}</string></dict>
+          </dict>
+          </plist>
+          PLIST
+          xcodebuild -exportArchive \
+            -archivePath "$RUNNER_TEMP/Sprout.xcarchive" \
+            -exportPath "$RUNNER_TEMP/export" \
+            -exportOptionsPlist "$RUNNER_TEMP/ExportOptions.plist"
+
+      - name: Upload to TestFlight
+        env:
+          ASC_KEY_P8_BASE64: ${{ secrets.ASC_KEY_P8_BASE64 }}
+        run: |
+          mkdir -p "$HOME/private_keys"
+          echo "$ASC_KEY_P8_BASE64" | base64 --decode > "$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          xcrun altool --upload-app -f "$RUNNER_TEMP/export/App.ipa" -t ios \
+            --apiKey "$ASC_KEY_ID" --apiIssuer "$ASC_ISSUER_ID"
+
+      - name: Remove secrets from the runner
+        if: always()
+        run: |
+          rm -f "$HOME/private_keys/"AuthKey_*.p8 "$RUNNER_TEMP/dist.p12" || true
+          rm -f "$HOME/Library/MobileDevice/Provisioning Profiles/sprout.mobileprovision" || true
+          security delete-keychain "$RUNNER_TEMP/build.keychain-db" || true

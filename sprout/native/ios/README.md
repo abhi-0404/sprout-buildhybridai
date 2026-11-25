@@ -44,9 +44,20 @@ Run from `app/` (pnpm only; run the Xcode steps on the Mac):
    #if DEBUG
    AppCheck.setAppCheckProviderFactory(AppCheckDebugProviderFactory())
    #else
-   AppCheck.setAppCheckProviderFactory(AppAttestProviderFactory()) // VERIFY: custom factory class per Firebase docs
+   AppCheck.setAppCheckProviderFactory(SproutAppCheckProviderFactory())
    #endif
    FirebaseApp.configure()
+   ```
+   `AppAttestProviderFactory` is not an SDK class (UNVERIFIED against https://firebase.google.com/docs/app-check/ios/app-attest-provider, check there). The SDK provides the provider `AppAttestProvider`, and the app defines its own factory:
+   ```swift
+   import FirebaseAppCheck
+   import FirebaseCore
+
+   final class SproutAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
+       func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
+           AppAttestProvider(app: app)
+       }
+   }
    ```
    For App Attest, enable the **App Attest** capability in Signing & Capabilities and register the app under Firebase console > App Check. For the Simulator and development, use the debug provider: run once, copy the debug token from the Xcode console, and add it under App Check > Apps > your iOS app > Manage debug tokens.
 9. Run: `pnpm exec cap run ios` or press Run in Xcode, on a real iPhone or a Simulator.

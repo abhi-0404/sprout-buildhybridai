@@ -1,4 +1,4 @@
-package app.sprout.ai // VERIFY: match the applicationId / package chosen in `cap add android`
+package dev.sprout.kids
 
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin

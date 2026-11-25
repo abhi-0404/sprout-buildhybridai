@@ -69,7 +69,7 @@ export function DeviceCheck() {
         {deviceStatus !== 'available' && (
           <button type="button" className="p-btn primary" onClick={prepare} disabled={busy}>Download model</button>
         )}
-        <button type="button" className="p-btn" onClick={() => run('only_device', 'On device')} disabled={busy}>Run on device</button>
+        <button type="button" className="p-btn" onClick={() => run('only_device', 'On device')} disabled={busy || deviceStatus !== 'available'} title={deviceStatus !== 'available' ? 'Download the model first' : undefined}>Run on device</button>
         <button type="button" className="p-btn" onClick={() => run('prefer_device', 'Hybrid')} disabled={busy}>Run hybrid</button>
         <button type="button" className="p-btn" onClick={() => run('only_cloud', 'Cloud')} disabled={busy}>Run in cloud</button>
       </div>

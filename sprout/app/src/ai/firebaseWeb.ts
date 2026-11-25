@@ -68,12 +68,22 @@ export class FirebaseWebAi implements AiClient {
 
   async generate(req: AiRequest): Promise<AiResult> {
     const t0 = performance.now();
-    const res = await this.model(req.mode, req.jsonSchema).generateContent(req.prompt);
+    let res;
+    try {
+      res = await this.model(req.mode, req.jsonSchema).generateContent(req.prompt);
+    } catch (e) {
+      // PREFER_ON_DEVICE rethrows when the on-device call itself fails (for example a quota error),
+      // it only falls back to the cloud when the model is unavailable. Retry once in the cloud, but
+      // only for prefer_device: only_device must never leave the device.
+      if (req.mode !== 'prefer_device') throw e;
+      res = await this.model('only_cloud', req.jsonSchema).generateContent(req.prompt);
+    }
+    // The SDK always sets inferenceSource. Never guess it: the privacy ledger depends on it.
     const src = res.response.inferenceSource;
-    const source =
-      src === InferenceSource.ON_DEVICE ? 'device'
-      : src === InferenceSource.IN_CLOUD ? 'cloud'
-      : req.mode === 'only_device' ? 'device' : 'cloud';
+    if (src !== InferenceSource.ON_DEVICE && src !== InferenceSource.IN_CLOUD) {
+      throw new Error('The AI SDK did not report where the request ran');
+    }
+    const source = src === InferenceSource.ON_DEVICE ? 'device' : 'cloud';
     return { text: res.response.text(), source, latencyMs: Math.round(performance.now() - t0) };
   }
 }

@@ -76,6 +76,14 @@ export function SproutProvider({ children }: { children: ReactNode }) {
   const refreshDevice = useCallback(async () => setDeviceStatus(await ai.deviceStatus()), [ai]);
 
   useEffect(() => void refreshDevice(), [refreshDevice]);
+  // While a download is running, re-check every few seconds so a finished download is noticed.
+  // Stops by itself once the status changes, and on unmount. 'downloadable' is not polled: it only
+  // changes after the parent taps "Download model", which refreshes the status itself.
+  useEffect(() => {
+    if (deviceStatus !== 'downloading') return;
+    const id = setInterval(() => void refreshDevice(), 4000);
+    return () => clearInterval(id);
+  }, [deviceStatus, refreshDevice]);
   useEffect(() => save('turns', turns), [turns]);
   useEffect(() => {
     const on = () => setOnline(true);

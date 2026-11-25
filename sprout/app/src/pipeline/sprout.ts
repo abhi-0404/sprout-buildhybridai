@@ -113,7 +113,9 @@ function withTimeout<T>(p: Promise<T>, ms: number): Promise<T> {
  * checks THAT (not the prompt template, whose words could collide with a profile term).
  */
 async function call(deps: Deps, steps: Step[], req: AiRequest, childText: string): Promise<AiResult> {
-  const goesToCloud = req.mode === 'only_cloud' || req.mode === 'prefer_cloud' || !deps.deviceReady;
+  // prefer_device can still reach the cloud (SDK fallback, or the adapter's cloud retry after an
+  // on-device error), so only only_device on a ready device skips the gate.
+  const goesToCloud = req.mode !== 'only_device' || !deps.deviceReady;
   if (goesToCloud) {
     // Hard privacy gate: nothing with a known identifier is ever sent off the device.
     const found = findKnownIdentifiers(childText, deps.profile);
