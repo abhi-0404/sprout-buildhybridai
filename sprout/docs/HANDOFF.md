@@ -1,6 +1,24 @@
 # Sprout: handoff
 
-Last updated: 2026-11-14 (Day 1, after the full test and audit pass). Deadline: Mon Nov 30 2026, 2:00 PM PT. Target submission: Nov 29.
+Last updated: 2026-11-27 early morning IST, after the overnight multi-agent run (tsc clean, 73/73 unit tests, e2e 53/53, build OK). Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+
+## Overnight run (Nov 26-27): read this first
+**The master plan is [WINNING-PLAN.md](WINNING-PLAN.md)**: the solution per platform, the architecture diagrams, the phase map Nov 27-30, your checklist, and the Stage 1 checklist.
+
+- **Agents**: chrome-expert, android-expert, ios-expert, competitor-scout, hackathon-winner, architect, reviewer. Reports are in `research/overnight/`, and the strategy is in `research/overnight/judge-verdict.md`.
+- **Strategy:** the Grand Prize, with **Best Android as the main "Best of" target**. iOS is a bonus, and Web is the fallback. Lead the pitch with the child as the user, the referee and the distress path. Do not lead with "privacy airlock": about 8 rivals already redact names.
+- **Commits (local only, not pushed):**
+  - `1f33623`: Device check gating, polling while downloading, the `prefer_device` cloud retry behind the privacy gate, Android `allowBackup=false`, iOS plugin guards (iOS 26, safe call handling, no crash without Firebase), and the iOS GitHub Actions workflow (`.github/workflows/ios-build.yml` and `.github/scripts/prepare-ios.sh`, never run yet).
+  - `2d65ded`: research reports and agent definitions.
+  - `3b86285`: the referee before/after view (grown-ups only) and an offline service worker (`app/public/sw.js`).
+- **Waiting for your approval** (each is a download or a new dependency):
+  1. Android App Check library. Without it, Android cloud calls fail, because App Check enforcement is on.
+  2. Bumping the Android Firebase BoM to 35.2.0.
+  3. `firebase-tools`, for the Hosting deploy.
+  4. Copying LICENSE to the repo root, so GitHub's About panel shows Apache.
+  5. Pushing the repo public. The free iOS cloud build needs this.
+- **Known nit:** on Windows, `pnpm e2e` passes but leaves its `vite preview` server on port 4174 running. Stop it afterwards.
+- **First thing in the morning:** enroll in the Apple Developer Program (it can take up to 48 hours), message friends for a Galaxy S25 / OnePlus 13 class phone and an iPhone 15 Pro or newer, then do the Firebase setup in [SETUP.md](SETUP.md).
 
 ## Try it now (no Firebase needed)
 ```
