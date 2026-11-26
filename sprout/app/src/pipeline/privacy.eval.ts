@@ -12,7 +12,7 @@ import { DEMO_PROFILE, FakeAi } from './testing';
 //  - shared/eval/heldout2.jsonl  : second blind set. Its misses also widened the rules, so it
 //                                  is development data now too.
 //  - shared/eval/heldout3.jsonl  : third blind set, written by a separate author without seeing
-//                                  the rules or the other sets. This is the honest number to quote.
+//                                  the rules or the other sets. Its first measurement (docs/EVAL-HISTORY.md) is the honest number to quote.
 // Worst case on purpose: the fake guard sends EVERY question to the cloud and finds no extra
 // names, so this measures the deterministic privacy layer alone (no help from the model).
 // The test asserts zero leaks for the development set only. The held-out set is reported
@@ -146,8 +146,8 @@ ${section(
       'Used while the rules were written, so these numbers are optimistic by construction. The eval test asserts zero leaks here.',
       'shared/eval/questions.jsonl', devResult)}
 ${section(
-      'Blind held-out set (quote these numbers)',
-      'Written by a separate author who never saw the detection rules or the other sets. Misses and leaks are reported exactly as found; this set does not fail the build.',
+      'Third held-out set (blind v3, measured once, then used for fixes)',
+      'Written by a separate author who never saw the detection rules or the other sets. Its first, unbiased measurement is recorded in docs/EVAL-HISTORY.md (18 of 65 details leaked, urgent 12 of 16, concern 7 of 24, 1 false alarm). Its misses were then fixed by category, so the numbers below are optimistic. This set does not fail the build.',
       'shared/eval/heldout3.jsonl', blindResult)}
 ${section(
       'Second held-out set (now used for development)',

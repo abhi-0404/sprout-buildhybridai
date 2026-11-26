@@ -36,6 +36,37 @@ const RULES: Rule[] = [
     ),
   },
   {
+    kind: 'self_harm',
+    level: 'urgent',
+    // Hinglish: "mujhe marr jana hai", "mar jaana chahta hu".
+    re: /\b(?:marr?\s+ja(?:na|ana|aana)\s+(?:hai|h|he|chahta|chahti)|mujhe\s+marr?\s+ja)/i,
+  },
+  {
+    kind: 'abuse',
+    level: 'urgent',
+    // Hinglish touching disclosures: "ajeeb tarah se chhute hai", "galat jagah chhua".
+    re: /\b(?:(?:ajeeb|galat|gand[ae]|bur[ae])\s+(?:tarah|tareeke|tarike)\s+se\s+(?:chhu|chhoo|chu)\w*|(?:galat|gandi|private)\s+jagah\s+(?:pe\s+|par\s+)?(?:chhu|chhoo|chu)\w*)/i,
+  },
+  {
+    kind: 'sad_or_scared',
+    level: 'urgent',
+    // Running away: a child about to leave home is an immediate safety risk.
+    // First person only: "why do kids run away from home" and "my cat will run away" are not alerts.
+    re: /\b(?:(?:i'?m|im|i\s+am)\s+(?:running|gonna\s+run|going\s+to\s+run)\s+away|i\s+(?:will|wanna|want\s+to|am\s+gonna|might|should)\s+run\s+away|i\s+ran\s+away|ghar\s+se\s+bhaag\w*|ghar\s+chhod\s+(?:ke\s+chal|dunga|dungi|du)\w*)/i,
+  },
+  {
+    kind: 'bullying',
+    level: 'urgent',
+    // Weapon threats from anyone ("he will bring a knife and stab me"). In-game talk is excluded in detectDistress.
+    re: /\b(?:(?:bring|brings|bringing|brought|has|have|had|got|carry|carries)\s+(?:a\s+)?(?:knife|gun|blade|chaku|pistol)[^.!?]{0,60}\b(?:kill|stab|shoot|hurt|maar)\w*\s+(?:me|us)|stab\s+me|shoot\s+me(?!\s+(?:an?\s+)?(?:email|e-mail|message|msg|text|dm|mail|line))|(?:will|gonna|going\s+to|wants?\s+to)\s+(?:kill|stab|shoot)\s+me)\b/i,
+  },
+  {
+    kind: 'online_danger',
+    level: 'concern',
+    // Strangers fishing for details, and scams asking for card numbers.
+    re: /\b(?:(?:someone|somebody)\s+i\s+(?:don'?t|dont|do\s+not)\s+know\s+(?:keeps?\s+)?(?:messag|text|dm|chat|add)\w*|(?:asked|asking|asks|wants?\s+to\s+know)\s+(?:me\s+)?(?:my\s+)?(?:age\s+and\s+)?(?:where\s+i\s+live|my\s+address|what\s+school|which\s+school|my\s+school)|(?:won|win)\s+(?:an?\s+)?(?:free\s+)?(?:iphone|phone|prize|gift|reward)[^.!?]{0,60}(?:card|password|otp|pay|bank)|(?:wants?|asks?|asking|needs?)\s+(?:for\s+)?(?:my\s+)?(?:mom'?s|moms|dad'?s|dads|parents'?|mummy'?s|papa'?s)\s+(?:credit\s+)?(?:card|password|otp|bank))/i,
+  },
+  {
     kind: 'bullying',
     level: 'concern',
     // Personal context required: "what does bully mean" is a vocabulary question, not distress.
@@ -47,7 +78,37 @@ const RULES: Rule[] = [
     // "why do i cry when i cut onions" must not trigger: crying only counts with a duration or frequency.
     re: /\b(i(?:'?m|\s+am)\s+(?:so\s+|really\s+|very\s+)?(?:sad|scared|lonely|afraid|frightened|unhappy)|i\s+feel\s+(?:so\s+|really\s+)?(?:sad|scared|alone|lonely|empty|worthless)|i\s+can'?t\s+stop\s+crying|i(?:'ve|\s+have)\s+been\s+crying|i\s+cry\s+(?:a\s+lot|every\s+(?:day|night)|all\s+the\s+time|myself\s+to\s+sleep)|i\s+hate\s+my\s*self|nobody\s+loves\s+me|i(?:'?m|\s+am)\s+(?:so|really|very|always)\s+(?:worried|anxious|nervous)|(?:tummy|stomach|head)\s+hurts\s+every\s+(?:morning|day|night)[^.!?]{0,40}(?:worried|scared|school))\b/i,
   },
+  {
+    kind: 'bullying',
+    level: 'concern',
+    // Name-calling and meanness in more forms: "keep calling me avi the baby", "took my lunch again".
+    re: /\b(?:(?:keep|keeps|kept|always|everyday|every\s+day)\s+calling\s+me|call(?:s|ed|ing)?\s+me\s+(?:fatty|fatso|moti|mota|useless|worthless|idiot|loser|chotu|kaalu|names)|call(?:s|ing)?\s+me\s+\w+\s+and\s+(?:everyone|everybody|they|all)\s+laugh|(?:everyone|everybody)\s+laughs?\s+at\s+me|took\s+my\s+(?:lunch|tiffin|bag|stuff)|(?:pushed|kicked|slapped|tripped|shoved)\s+me|(?:send|sends|sending|sent|say|says|saying|post|posting)\s+(?:me\s+)?mean\s+(?:stuff|things|messages|texts|comments|pics))\b/i,
+  },
+  {
+    kind: 'sad_or_scared',
+    level: 'concern',
+    // Loneliness, grief, fear, home conflict, stress and self-worth, including Hinglish.
+    re: /\b(?:i\s+have\s+no\s+friends|i\s+(?:don'?t|dont)\s+have\s+(?:any\s+)?friends|cried\s+(?:all\s+night|all\s+day|every\s+night|so\s+much|a\s+lot)|i\s+miss\s+(?:him|her|them|my\s+\w+)\s+so\s+much|(?:dar|darr)\s+lag(?:ta|ti|raha|rahi)|(?:parents|mummy\s+papa|papa\s+mummy|mom\s+and\s+dad|mum\s+and\s+dad|dad\s+and\s+mom)\s+(?:always\s+)?(?:fight|shout|argue|scream)|hide\s+under\s+(?:the\s+|my\s+)?(?:blanket|bed|table)|feel\s+like\s+(?:i'?m|im|i\s+am)\s+(?:so\s+)?(?:stupid|useless|worthless|dumb|a\s+burden|a\s+failure|nothing)|(?:i'?m|im|i\s+am)\s+a\s+burden|(?:stress|worried|scared|school|exam)[^.!?]{0,40}(?:tummy|stomach|head|pet)\s+(?:hurts?|dard)|school\s+nahi\s+jana|(?:scary|creepy|horrible|disturbing)[^.!?]{0,60}(?:can'?t|cant)\s+(?:stop\s+thinking|sleep|forget)|(?:shouts?|yells?)\s+(?:at\s+me\s+)?and\s+calls?\s+me)/i,
+  },
 ];
+
+/** Weapon talk that is clearly inside a game ("he will shoot me in fortnite", "nerf gun"). */
+const IN_GAME = /^[^.!?]{0,25}?\b(?:in|on)\s+(?:the\s+)?(?:game|fortnite|minecraft|roblox|free\s*fire|pubg|bgmi|cod)\b|\b(?:nerf|water|toy)\s+gun/i;
+const NOT_A_GAME = /\b(?:not\s+a\s+game|not\s+(?:in\s+)?(?:the\s+)?game|for\s+real|real\s+life|in\s+real|really\s+(?:will|did|has))\b/i;
+/** The child's own joke marker right after a fear phrase: "scared of the dark lol jk". Lowercase only ("JK" may be a name). */
+const JOKE_AFTER = /^[^.!?]{0,30}?(?<!\b(?:say|says|said|saying)\s+)\b(?:lol\s+)?(?:jk|j\/k|just\s+(?:kidding|joking))\b/;
+const MEANS_IT = /\b(?:no\s+jk|not\s+(?:even\s+)?(?:kidding|joking)|but\s+seriously|seriously|for\s+real|really)\b/i;
+
+const globalRe = (re: RegExp) => new RegExp(re.source, re.flags.includes('g') ? re.flags : re.flags + 'g');
+
+/** Filters that turn a match into a non-signal. Every match of a rule is checked, so a later real threat still counts. */
+function dismissed(rule: Rule, m: RegExpMatchArray, text: string): boolean {
+  const after = text.slice((m.index ?? 0) + m[0].length);
+  if (/\b(?:knife|gun|blade|chaku|pistol|stab|shoot)/i.test(m[0]) && !NOT_A_GAME.test(text) && (IN_GAME.test(after) || IN_GAME.test(m[0]))) return true;
+  // Only a fear or sadness phrase can be joked away, never bullying, abuse or self-harm.
+  if (rule.kind === 'sad_or_scared' && rule.level === 'concern' && /scared|afraid|dar/i.test(m[0]) && JOKE_AFTER.test(after) && !MEANS_IT.test(text)) return true;
+  return false;
+}
 
 /** Sibling play ("my brother hits me with pillows") is not abuse. */
 const PLAYFUL = /\b(pillows?|tickl\w*|play(?:ing)?\s+(?:fight|wrestl\w*)|for\s+fun|as\s+a\s+joke|in\s+a\s+game)\b/i;
@@ -56,7 +117,7 @@ const SIBLING = /\b(?:little|big|older|younger|baby)?\s*(?:brother|sister|bro|si
 export function detectDistress(text: string): DistressSignal {
   let best: DistressSignal = { level: 'none' };
   for (const r of RULES) {
-    const m = text.match(r.re);
+    const m = [...text.matchAll(globalRe(r.re))].find((x) => !dismissed(r, x, text));
     if (!m) continue;
     if (r.kind === 'abuse' && SIBLING.test(m[0]) && !/touch|secret/i.test(m[0])) {
       // Sibling conflict: not an urgent abuse alert. Playful contexts are ignored entirely.

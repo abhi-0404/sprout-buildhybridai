@@ -94,7 +94,7 @@ describe('review fixes', () => {
     const ai = new FakeAi('unavailable', {
       guard: () => JSON.stringify({ category: 'ok', needsBigBrain: true, topic: 'friends', names: ['tanvi'] }),
     });
-    const t = await ask('my friend tanvi is funny, why do people laugh?', deps(ai, { deviceReady: false }));
+    const t = await ask('tanvi and i laughed so hard, why do people laugh?', deps(ai, { deviceReady: false }));
     expect(t.cloudSaw).toContain('tanvi');
   });
 });

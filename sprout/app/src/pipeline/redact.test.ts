@@ -52,3 +52,63 @@ describe('redact', () => {
     );
   });
 });
+
+describe('redact: kid spellings and lowercase cues', () => {
+  it('hides close misspellings of profile names and places', () => {
+    const r = redact('riiya and kabirr went to koregaon prak with mrs kappor', P);
+    expect(r.text).not.toMatch(/riiya|kabirr|kappor/i);
+  });
+
+  it('keeps everyday words that are one letter away from a name', () => {
+    expect(redact('what is water vapor made of', P).text).toBe('what is water vapor made of');
+    expect(redact('my little brother hits me with pillows', P).text).toBe('my little brother hits me with pillows');
+  });
+
+  it('hides lowercase names after strong cues', () => {
+    for (const q of ['my cousin meher likes cats', 'a girl named ishita sits with me', 'my maths teacher is called ms rao', 'vikram sir gave us homework']) {
+      expect(redact(q, P).redactions.some((x) => x.kind === 'NAME')).toBe(true);
+    }
+  });
+
+  it('does not treat a process name as a person', () => {
+    expect(redact('a process called photosynthesis makes food', P).text).toBe('a process called photosynthesis makes food');
+  });
+
+  it('hides handles that contain the child name and announced game names', () => {
+    expect(redact('add me, i am avi_gamer21', P).text).not.toMatch(/avi_gamer21/);
+    expect(redact('my minecraft username is SkyBlock77', P).text).not.toMatch(/SkyBlock77/);
+  });
+
+  it('hides flat numbers, localities, pincodes and roll or bus numbers', () => {
+    const r = redact('i live in flat 12 sunshine residency near shivaji nagar, roll no 31, my van number 19', P);
+    expect(r.text).not.toMatch(/flat 12|sunshine residency|shivaji nagar|\b31\b|\b9\b/);
+    expect(redact('we live in Pune 411001', P).text).not.toMatch(/411001/);
+  });
+});
+
+describe('redact: review regressions', () => {
+  const Q = { ...P, childName: 'Brian Grace', nicknames: ['Angel'], otherNames: ['Paige', 'Sahil'], city: 'Paris', places: ['Baner Road'] };
+
+  it('keeps a misspelled street inside the address token', () => {
+    expect(redact('we live at 12 Banr Road', Q).text).toBe('we live at [ADDRESS_1]');
+    const r = redact('I live at 12 Koregaon Park', P);
+    expect(restore(r.text, r.redactions, P)).toBe('I live at 12 Koregaon Park');
+  });
+
+  it('does not treat real words as misspelled names', () => {
+    const q = 'what is an angle? my brain hurts. what grade is this page? can a boat sail?';
+    expect(redact(q, Q).text).toBe(q);
+  });
+
+  it('does not over-redact everyday phrases', () => {
+    for (const q of ["my friend doesn't like me", 'my teacher scolds me', 'who was gandhi ji', 'dear sir', 'maths sir is strict',
+      'a planet named pluto', 'jallianwala bagh history', 'twin towers', 'a secret society', "my roblox name isn't working", 'flat 2d shapes']) {
+      expect(redact(q, P).text).toBe(q);
+    }
+  });
+
+  it('hides dotted handles and non-ASCII names before sir', () => {
+    expect(redact('my discord tag is cool.kid', P).text).not.toMatch(/cool\.kid/);
+    expect(redact('émile sir is kind', P).text).not.toMatch(/émile|mile/);
+  });
+});

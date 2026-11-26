@@ -10,7 +10,7 @@ Source keys used below: JV = research/overnight/judge-verdict.md, CH = research/
 
 Why Sprout wins:
 - **Nobody else has the referee.** At least 8 entries strip personal data before the cloud. None lets the small model check and rewrite the big model's answer for a child's age. None has a deterministic distress path with a parent alert (CO section 2).
-- **Hard numbers, not claims.** 0 of 473 leak cases, 25/25 blind distress caught, 0/126 false alarms (sprout/docs/EVAL.md, JV section 3). We add measured phone numbers (latency, % on device) on Nov 28.
+- **Hard numbers, not claims.** Blind v3 first measurement (rules only): 47 of 65 details kept on device, urgent 12/16, 1/110 false alarms; after category fixes 0 leaks across 623 questions (optimistic, labelled so). See sprout/docs/EVAL-HISTORY.md. We add measured phone numbers (latency, % on device) on Nov 28.
 - **One safety pipeline, three platforms.** The same TypeScript engine (sprout/app/src/pipeline) runs on Chrome, Android and iOS. Multi-platform gets "strong consideration" for the Grand Prize (R01).
 
 Target prizes (R01 prize table, JV section 1):
