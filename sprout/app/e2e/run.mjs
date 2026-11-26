@@ -1,7 +1,7 @@
 // End-to-end test: builds are served with `vite preview`, driven in headless Chrome over the
 // DevTools protocol, with assertions, axe accessibility checks, overflow checks and console
-// error capture. Usage: pnpm e2e   (env CHROME=path to override the Chrome binary)
-import { spawn } from 'node:child_process';
+// error capture. It builds the app itself, in demo mode. Usage: pnpm e2e   (env CHROME=path to override the Chrome binary)
+import { spawn, spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -26,9 +26,25 @@ const check = (name, ok, detail = '') => {
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? `  (${detail})` : ''}`);
 };
 
+// ---------- build in demo mode ----------
+// The checks below expect demo mode (sample family, scripted answers). A filled .env.local would
+// build a live app, so the Firebase keys are blanked here: Vite lets real environment variables
+// override .env files, and blank keys mean firebaseConfigured is false. It builds into dist-e2e,
+// never dist, so a demo build can never be shipped by `cap sync` or a Hosting deploy.
+const OUT = 'dist-e2e';
+const demoEnv = { ...process.env, VITE_FIREBASE_API_KEY: '', VITE_FIREBASE_PROJECT_ID: '' };
+const built = spawnSync(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm', ['exec', 'tsc', '-b', '&&', 'pnpm', 'exec', 'vite', 'build', '--outDir', OUT, '--emptyOutDir'],
+  { cwd: app, env: demoEnv, shell: true, stdio: 'inherit' });
+if (built.status !== 0) throw new Error('Demo build failed');
+
 // ---------- start preview server ----------
+// A leftover server on the port would be tested instead of this build (with --strictPort the new
+// one just exits), so refuse to run rather than report results for the wrong build.
+if (await fetch(BASE).then(() => true, () => false)) {
+  throw new Error(`Port ${PORT} is already in use (a leftover vite preview?). Stop it and rerun.`);
+}
 const server = spawn(process.platform === 'win32' ? 'pnpm.cmd' : 'pnpm',
-  ['exec', 'vite', 'preview', '--port', String(PORT), '--strictPort'], { cwd: app, shell: process.platform === 'win32', stdio: 'ignore' });
+  ['exec', 'vite', 'preview', '--outDir', OUT, '--port', String(PORT), '--strictPort'], { cwd: app, shell: process.platform === 'win32', stdio: 'ignore' });
 for (let i = 0; i < 60; i++) {
   try { if ((await fetch(BASE)).ok) break; } catch {}
   await sleep(250);
@@ -241,8 +257,10 @@ try {
   console.log(`\n${results.length - failed.length}/${results.length} checks passed. Screenshots: e2e/screenshots/`);
   try { ws.close(); } catch {}
   chrome.kill();
-  server.kill();
-  if (process.platform === 'win32') spawn('taskkill', ['/PID', String(server.pid), '/T', '/F'], { stdio: 'ignore' });
+  // On Windows the server runs under a cmd wrapper: kill the whole tree first (synchronously), or
+  // killing the wrapper orphans vite preview, which then keeps serving the port for later runs.
+  if (process.platform === 'win32') spawnSync('taskkill', ['/PID', String(server.pid), '/T', '/F'], { stdio: 'ignore' });
+  else server.kill();
   await sleep(500);
   try { rmSync(profile, { recursive: true, force: true }); } catch {}
   process.exit(failed.length ? 1 : 0);

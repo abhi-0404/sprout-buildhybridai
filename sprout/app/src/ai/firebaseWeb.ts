@@ -1,5 +1,5 @@
 import {
-  getAI, getGenerativeModel, GoogleAIBackend, InferenceMode, InferenceSource,
+  getAI, getGenerativeModel, GoogleAIBackend, InferenceMode, InferenceSource, ThinkingLevel,
   type AI, type GenerativeModel, type HybridParams,
 } from 'firebase/ai';
 import { getFirebaseApp } from '../lib/firebase';
@@ -21,13 +21,33 @@ interface LanguageModelGlobal {
   availability(opts?: object): Promise<DeviceStatus>;
 }
 
+/**
+ * Thinking level for capped text answers. Thinking tokens count against maxOutputTokens: with the
+ * model's default thinking, a 400 token cap left a kid's answer cut off mid-sentence (383 of 400
+ * tokens spent thinking). MINIMAL keeps answers whole and fast, but models differ: gemini-3.8-flash
+ * rejects MINIMAL (LOW is its lowest) and Gemini 2.5 models reject thinkingLevel entirely (undefined
+ * here means: send no thinkingConfig). VITE_CLOUD_THINKING overrides; an unknown value is ignored.
+ */
+export function answerThinkingLevel(model: string, override?: string): string | undefined {
+  const levels = Object.values(ThinkingLevel) as string[];
+  const wanted = override?.trim().toUpperCase();
+  if (wanted && levels.includes(wanted)) return wanted;
+  if (/gemini-2\./.test(model)) return undefined;
+  if (/gemini-3\.8/.test(model)) return ThinkingLevel.LOW;
+  return ThinkingLevel.MINIMAL;
+}
+
 export class FirebaseWebAi implements AiClient {
   readonly platform = 'web' as const;
   private ai: AI;
   private models = new Map<string, GenerativeModel>();
 
-  constructor(private cloudModel = import.meta.env.VITE_CLOUD_MODEL || 'gemini-3.8-flash') {
+  private answerThinking?: { thinkingLevel: string };
+
+  constructor(private cloudModel = import.meta.env.VITE_CLOUD_MODEL || 'gemini-3.5-flash') {
     this.ai = getAI(getFirebaseApp(), { backend: new GoogleAIBackend() });
+    const level = answerThinkingLevel(cloudModel, import.meta.env.VITE_CLOUD_THINKING);
+    this.answerThinking = level ? { thinkingLevel: level } : undefined;
   }
 
   private model(mode: AiMode, jsonSchema?: object): GenerativeModel {
@@ -38,9 +58,14 @@ export class FirebaseWebAi implements AiClient {
         mode: MODE[mode],
         inCloudParams: {
           model: this.cloudModel,
+          // JSON tasks (guard, referee) are the safety checks: no token cap, so they keep the
+          // model's default thinking. Only capped text answers get the reduced thinking level.
           generationConfig: jsonSchema
             ? { responseMimeType: 'application/json', responseJsonSchema: jsonSchema as never, temperature: 0 }
-            : { temperature: 0.6, maxOutputTokens: 400 },
+            : {
+                temperature: 0.6, maxOutputTokens: 400,
+                ...(this.answerThinking ? { thinkingConfig: this.answerThinking } : {}),
+              },
         },
         onDeviceParams: {
           createOptions: { expectedInputs: TEXT_EN, expectedOutputs: TEXT_EN },

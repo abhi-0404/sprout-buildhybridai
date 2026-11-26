@@ -29,7 +29,7 @@ Goal: win #BuildHybridAI 2026 (Google/Firebase on Devpost, $30k, deadline **Mon 
 | PII strip (name, school, address, phone, friends' names) | Device: deterministic list from the parent's setup plus regex, then a Nano pass | A child's identity must never reach any cloud |
 | Safety and intent guard on every message | Device (Nano, JSON schema) | Runs on every message, so it must be free, instant and private |
 | Simple answers, spelling, "what is" questions | Device | Offline in the car, zero cost |
-| Deep "why/how" answers, stories, homework explanations | Cloud (gemini-3.8-flash), sanitized text only | Needs a bigger model |
+| Deep "why/how" answers, stories, homework explanations | Cloud (gemini-3.5-flash), sanitized text only | Needs a bigger model |
 | Referee: is the cloud answer age-appropriate? | Device | The guardian checks the big brain before the child sees anything |
 | Distress (sad, scared, being hurt) | Deterministic calm script plus a "talk to a trusted adult" prompt plus a parent alert; no generation | Lesson from past winners: keep critical paths deterministic |
 | Weekly parent digest | Cloud, built from on-device topic labels and counts only, never transcripts | Respects the child's privacy too |

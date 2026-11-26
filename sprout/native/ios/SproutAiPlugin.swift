@@ -30,7 +30,7 @@ public class SproutAiPlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     // Fallback cloud model. JS may pass "cloudModel" (from VITE_CLOUD_MODEL / Remote Config) per request.
-    private static let defaultCloudModelName = "gemini-3.8-flash"
+    private static let defaultCloudModelName = "gemini-3.5-flash"
 
     /// CAPPluginCall and the plugin are not Sendable. They are only used to hand a result back to
     /// JavaScript, so the hop is hidden behind this box and always lands on the main actor.

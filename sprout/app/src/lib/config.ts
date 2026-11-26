@@ -8,7 +8,7 @@ const firebaseApp = async () => (await import('./firebase')).getFirebaseApp();
 
 /** Defaults used until (or unless) a fetch succeeds. Keep in sync with the Remote Config template. */
 export const REMOTE_DEFAULTS = {
-  cloud_model: 'gemini-3.8-flash',
+  cloud_model: 'gemini-3.5-flash',
   allow_cloud: true,
   referee_cloud_answers: true,
   max_device_chars: 600,

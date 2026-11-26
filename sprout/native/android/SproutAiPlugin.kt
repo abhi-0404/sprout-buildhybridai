@@ -170,6 +170,6 @@ class SproutAiPlugin : Plugin() {
 
     companion object {
         // Keep in sync with VITE_CLOUD_MODEL / Remote Config. Cloud model names are not on-device.
-        private const val CLOUD_MODEL = "gemini-3.8-flash"
+        private const val CLOUD_MODEL = "gemini-3.5-flash"
     }
 }

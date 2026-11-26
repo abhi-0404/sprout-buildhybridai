@@ -1,7 +1,7 @@
 {
   "parameters": {
     "cloud_model": {
-      "defaultValue": { "value": "gemini-3.8-flash" },
+      "defaultValue": { "value": "gemini-3.5-flash" },
       "description": "Cloud Gemini model used for big questions and the weekly note.",
       "valueType": "STRING"
     },

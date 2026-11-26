@@ -30,7 +30,7 @@ The engine is the same everywhere. What changes is the AI adapter behind `AiClie
 ### Chrome (web)
 - **Judge sees:** the kid chat with badges "Sprout knew this!" (device) or "Asked the big brain" (cloud), the "What the big brain saw" split view, the parent dashboard and alerts (HANDOFF "Done").
 - **On device:** deterministic redaction and distress (pure TS), plus Gemini Nano through the Firebase JS SDK hybrid API for guard, simple answers and referee (sprout/app/src/ai/firebaseWeb.ts). If Chrome has no Nano, a "cloud-safe mode" banner shows and the guard runs in the cloud on already-redacted text only (sprout/app/src/pipeline/sprout.ts:158).
-- **In the cloud:** gemini-3.8-flash for hard "why" answers on sanitized text; weekly digest from counts only (PLAN.md "Why hybrid").
+- **In the cloud:** gemini-3.5-flash for hard "why" answers on sanitized text; weekly digest from counts only (PLAN.md "Why hybrid").
 - **Status today:** works in Demo mode; 66 unit tests at the last recorded run, e2e 53/53 (HANDOFF lines 136-142). Now 70/70 unit tests after the overnight fixes (4 new in `sprout/app/src/ai/firebaseWeb.test.ts`). No real AI Logic call has ever run; no hosted URL (JV section 1). Laptop Nano probably fails the >4 GB GPU / 16 GB RAM bar without the bypass flag (CH section 2).
 - **Done overnight (reviewed, tested, committed 1f33623):** "Run on device" disabled until the model is available (DeviceCheck.tsx, CH bug 1); status polling every 4 s while `downloading` (state.tsx, CH bug 2); `prefer_device` retries once in the cloud when the on-device call throws (always behind the privacy gate, sprout.ts), and a missing `inferenceSource` now throws instead of being guessed (firebaseWeb.ts).
 - **Also done overnight (committed 3b86285):** referee before/after (raw cloud answer vs the guardian rewrite, grown-ups section of the kid panel and parent Activity, visible in Demo mode on the World War 2 sample); hand-written service worker so the hosted app reloads offline. The cloud retry privacy gate is confirmed by the code reviewer. Unit 73/73, e2e 53/53.
@@ -39,14 +39,14 @@ The engine is the same everywhere. What changes is the AI adapter behind `AiClie
 ### Android (primary)
 - **Judge sees:** the same app on a real Nano 4 phone in a child's hands: device badge with latency, airplane mode still answering, referee before/after, distress card with the alert arriving on the laptop 2 s later (JV section 4).
 - **On device:** Gemini Nano 4 through AICore, via the Kotlin plugin using firebase-ai-ondevice (sprout/native/android/SproutAiPlugin.kt; registered in MainActivity, AN section 4).
-- **In the cloud:** same gemini-3.8-flash via firebase-ai; source read from `inferenceSource` ON_DEVICE / IN_CLOUD (AN section 1).
+- **In the cloud:** same gemini-3.5-flash via firebase-ai; source read from `inferenceSource` ON_DEVICE / IN_CLOUD (AN section 1).
 - **Status today:** debug APK builds ("BUILD SUCCESSFUL", HANDOFF "Android"). Never run on a phone. Runs in Demo mode until built with `google-services.json` and `VITE_NATIVE_FIREBASE=true`. **App Check is NOT installed:** MainActivity.java only registers the plugin; nothing calls `installAppCheckProviderFactory`, so every cloud call would be rejected under enforcement (AN risk 1). build.gradle:49-50 names the App Check artifacts, but wiring it needs the firebase-appcheck Gradle library, a download that is **waiting for your approval**. `allowBackup` is now `false` (AndroidManifest.xml:5, committed 1f33623); data extraction rules are not added yet (AN risk 3). `native/android/SproutAiPlugin.kt` now uses package `dev.sprout.kids`, matching the app copy.
 - **Left:** approve the App Check library download, then App Check (Play Integrity + debug provider) in MainActivity before `super.onCreate`; `deviceStatus` reason strings (not started); BoM 34.6.0 to 35.2.0 (needs your OK, AN section 1); rebuild the APK; one cloud call from the APK on any Android phone over Wi-Fi; the Nov 28 phone evening.
 
 ### iOS (bonus)
 - **Judge sees:** 20-30 s of the same volcano question on an iPhone, badge showing `apple-foundation-models-system-language-model` (JV section 4). If no iPhone: a 3 s shot of the green CI run, labelled honestly.
 - **On device:** Apple Foundation Models through Firebase Apple SDK 12.x `HybridModel` (sprout/native/ios/SproutAiPlugin.swift). Source from `rawResponse.modelVersion` (IO section 1).
-- **In the cloud:** gemini-3.8-flash as the hybrid secondary.
+- **In the cloud:** gemini-3.5-flash as the hybrid secondary.
 - **Status today:** `sprout/app/ios` does not exist; Swift never compiled (IO section 2). The builder wrote `.github/workflows/ios-build.yml` and `.github/scripts/prepare-ios.sh` (untracked, **never run**): macos-26, adds `@capacitor/ios@8.6.2` on the runner only, `cap add ios --packagemanager SPM`, wraps the plugin as a local SPM package (declares iOS 15, Foundation Models code behind `@available(iOS 26.0, *)` guards in SproutAiPlugin.swift), unsigned Simulator build. The `testflight` job is a sketch: GoogleService-Info.plist is not added to the target, no App Attest entitlement, no App Check factory in AppDelegate (workflow TODO block). native/ios/README.md step 8 now defines `SproutAppCheckProviderFactory` (still [U] against Firebase docs).
 - **Left:** push the repo (you), CI iterations until green (expect 3-6, IO step 8), Apple enrollment, signing secrets, finish the TestFlight job TODOs, TestFlight internal build, iPhone evening. Hard stop: Nov 29 noon IST if CI is still red (JV risk register). Realistic outcome: a green Simulator compile; iPhone footage is a stretch (enrollment up to 48 h [U] lands around Nov 29 morning).
 
@@ -61,7 +61,7 @@ The engine is the same everywhere. What changes is the AI adapter behind `AiClie
 | Native wrapper | Capacitor | @capacitor/core ^8.6.2, @capacitor/cli ^8.6.2, @capacitor/android 8.6.2; @capacitor/ios 8.6.2 is added **on the CI runner only** by prepare-ios.sh (not in package.json, nothing downloaded to your disk; IO step 3) |
 | Android plugin | Kotlin `SproutAi` plugin | firebase-bom 34.6.0 (35.2.0 pending OK), firebase-ai 18.2.0, firebase-ai-ondevice 16.0.0-beta08, firebase-appcheck-playintegrity, firebase-appcheck-debug (debug only) named in Gradle but not wired in MainActivity and the library download awaits your OK, kotlinx-coroutines-android 1.10.2, Kotlin 2.4.0, JDK 21, minSdk 26, target 36 (app/android/app/build.gradle:46-51, variables.gradle) |
 | iOS plugin | Swift `SproutAi` plugin | firebase-ios-sdk 12.13.0 ..< 13.0.0 (prefer 12.19.3), products FirebaseCore + FirebaseAILogic + FirebaseAppCheck; plugin package declares iOS 15 with iOS 26 availability guards (Foundation Models needs iOS 26 at runtime); Xcode 26.6 (sprout/native/ios/README.md, .github/scripts/prepare-ios.sh, IO section 1) |
-| Firebase AI Logic | Hybrid inference, Gemini Developer API (Spark, free) | cloud model gemini-3.8-flash (docs/SETUP.md, PLAN.md) |
+| Firebase AI Logic | Hybrid inference, Gemini Developer API (Spark, free) | cloud model gemini-3.5-flash (docs/SETUP.md, PLAN.md) |
 | App Check | Required by AI Logic | Web: reCAPTCHA Enterprise, code done (sprout/app/src/lib/firebase.ts:33); Android: Play Integrity + debug, **not wired yet** (MainActivity); iOS: App Attest + debug provider, documented in native/ios/README.md step 8, not in CI yet (IO risk 9) |
 | Remote Config | Policy can only tighten parent settings | params cloud_model, allow_cloud, referee_cloud_answers, max_device_chars (firebase/remoteconfig.template.json, lib/config.ts) |
 | Auth + Firestore | Family sync, alerts with no text | Google sign-in, append-only alerts rules (lib/family.ts, firebase/firestore.rules) |
@@ -79,7 +79,7 @@ flowchart LR
   end
   subgraph Firebase["Firebase (Spark, free)"]
     AC["App Check<br/>reCAPTCHA Ent / Play Integrity / App Attest + debug"]
-    AIL["AI Logic<br/>gemini-3.8-flash"]
+    AIL["AI Logic<br/>gemini-3.5-flash"]
     RC["Remote Config<br/>policies, model name"]
     FS["Firestore<br/>family, alerts (no text)"]
     AU["Auth<br/>parent Google sign-in"]

@@ -1,6 +1,18 @@
 # Sprout: handoff
 
-Last updated: 2026-11-27 early morning IST, after the overnight multi-agent run (tsc clean, 73/73 unit tests, e2e 53/53, build OK). Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+Last updated: 2026-11-26 evening IST, after the live Firebase cloud check (tsc + build OK, 74/74 unit tests, e2e 53/53). Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+
+## Firebase setup (2026-11-26, live cloud verified, read this first)
+- **Project:** `buildhybridai-c1694` ("BuildHybridAI", Spark plan, user's personal Google account). Linked in `firebase/.firebaserc`. Firebase CLI: `pnpm firebase <cmd>` from `app/` (firebase-tools 15.37.0, logged in as the user).
+- **Done:** web app "Sprout web" registered; Firestore `(default)` in `asia-south1` (permanent); `firestore.rules` deployed; AI Logic on with the Gemini Developer API (free); Google sign-in on.
+- **App Check is ENFORCED for AI Logic** (turned on with AI Logic). Without a token every cloud call fails with 401. Set up: reCAPTCHA Enterprise score key (domains localhost, 127.0.0.1, `buildhybridai-c1694.web.app`, `.firebaseapp.com`) registered as the web app's App Check provider, plus a debug token "Sprout local dev" used by dev builds. Both are in `app/.env.local` (git-ignored). The reCAPTCHA Enterprise API needed no billing.
+- **Verified live:** the app's own `FirebaseWebAi` in headless Chrome on the dev server: App Check token 200, Remote Config 200, `gemini-3.5-flash` answered "why is the sky blue" in 3.3 s, `source=cloud`, full answer.
+- **Model change: gemini-3.8-flash -> gemini-3.5-flash** everywhere (web, Remote Config template and defaults, Android, iOS, docs). On the free tier 3.8-flash timed out, returned 500 "high demand", then 429 quota; 3.5-flash answered.
+- **Bug fixed:** thinking tokens count against `maxOutputTokens`. With default thinking the model used 383 of 400 tokens thinking and the kid's answer was cut off. Web text answers now send a thinking level picked per model by `answerThinkingLevel()` (MINIMAL; LOW for gemini-3.8; none for Gemini 2.5), override with `VITE_CLOUD_THINKING` (invalid values ignored). The JSON safety checks (guard, referee) keep the model's default thinking: they have no token cap. Android and iOS set no cloud token cap, so no cut-off there, but they use default thinking (slower, more quota).
+- **e2e now builds itself in demo mode into `dist-e2e/`** (blanks the Firebase keys), so `pnpm e2e` passes with a filled `.env.local` and never overwrites `dist/` (which Capacitor and Hosting ship). It also refuses to run if port 4174 is taken and now kills its preview server tree: an orphaned `vite preview` from an earlier run had been answering e2e on 4174 and serving whatever was in `dist/`.
+- **Known gap (pre-existing):** Remote Config `cloud_model` is fetched but no client uses it (web `new FirebaseWebAi()` takes the env/default, Android hardcodes, iOS gets no `cloudModel` from JS). Do not claim runtime model switching in the pitch until it is wired.
+- **Watch out:** free-tier rate limits (429) are real; the first live attempt hit one and the retry 20 s later worked. On-device first keeps cloud use low; for the demo, avoid rapid-fire cloud questions. Remote Config template is not published to the project yet (app uses its defaults).
+- **Next:** Hosting deploy (`pnpm hosting`) only with user OK; Android `google-services.json` + Play Integrity, iOS plist; delete empty GCP project `sprout-hybrid-0553` only if the user asks.
 
 ## Nov 27 session: zero-install builds and the $0 iOS path (read this first)
 - **Firebase Studio is closed to new users** (sign-ups disabled 2026-06-22, shutdown 2027-03-22). The zero-install loop is now: push to GitHub, free Actions runners build, view in the browser. See `research/overnight/android-cloud-dev.md`.

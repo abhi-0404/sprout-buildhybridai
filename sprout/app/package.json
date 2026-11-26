@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "eval": "vitest run --config vitest.eval.config.ts",
-    "e2e": "pnpm build && node --experimental-websocket e2e/run.mjs",
+    "e2e": "node --experimental-websocket e2e/run.mjs",
     "firebase": "pnpm dlx firebase-tools@15.37.0 --config ../firebase/firebase.json",
     "hosting": "pnpm build && pnpm firebase deploy --only hosting"
   },
