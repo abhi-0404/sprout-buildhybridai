@@ -194,6 +194,16 @@
   min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--warm-soft); color: var(--warm);
   font-size: var(--t-xs); display: inline-grid; place-items: center; font-weight: 600;
 }
+/* Phones: all six tabs fit, icon over a short label, no sideways scroll. */
+@media (max-width: 899px) {
+  .p-tabs { padding: 0 4px; gap: 0; overflow-x: visible; }
+  .p-root .p-tab {
+    flex: 1 1 0; min-width: 0; flex-direction: column; justify-content: center; gap: 2px;
+    padding: 6px 2px; font-size: 11px; position: relative;
+    white-space: normal; text-align: center; line-height: 1.15;
+  }
+  .p-root .p-tab .p-badge-count { position: absolute; top: 4px; left: calc(50% + 6px); min-width: 16px; height: 16px; padding: 0 4px; font-size: 10px; }
+}
 .p-main { flex: 1; width: 100%; max-width: 760px; margin: 0 auto; padding: 28px 16px 64px; min-width: 0; display: block; }
 .p-section-head { padding-bottom: 20px; }
 .p-section-head p { color: var(--muted); margin-top: 6px; }

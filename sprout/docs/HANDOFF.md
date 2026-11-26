@@ -154,14 +154,14 @@ Done:
 - Simple "Secret check" panel, with the technical steps folded under "For grown-ups".
 - Short demo ribbon.
 
-## Minimalist UI pass (2026-11-26, done, NOT committed yet)
+## Minimalist UI pass (2026-11-26, done, pushed in 760f8e7)
 - Guided by Anthropic's `frontend-design` skill (installed in `.claude/skills/`, git-ignored, guidance only).
 - Every emoji replaced by `lucide-react@0.525.0` line icons (was already on disk). Kid icon map: `app/src/kid/icons.tsx`; parent icons: `Icon` and `TOPIC_ICON` in `app/src/parent/shared.tsx`.
 - Shared tokens (paper, ink, moss; cloud = sky, care = honey) in `app/src/styles.css`; kid, clay and parent CSS rewritten on top of them. Safety flows (crisis card, helplines, PIN gate, privacy counters) unchanged.
 - Reviewer fixes applied: parent margin reset lowered to `:where()` so spacing classes work; light `--warm` darkened to #8f5a0d for 4.5:1 contrast; global focus keeps a real outline; unknown topic falls back to a chat icon instead of crashing; zero cost shows `$0.00`; welcome step not announced twice; dark-mode mic icon contrast; dead CSS and icon names removed.
 - Verified: `tsc -b` clean, 73/73 unit tests, build OK, e2e 53/53 (axe, dark mode, 360/390/1280px).
 - Note: `pnpm e2e` can hang after finishing on Windows (vite preview not killed). Workaround: `pnpm build` then `node --experimental-websocket e2e/run.mjs`.
-- Left as-is (low): parent tab bar scrolls sideways on phones; legacy unused `.card/.banner/.bubble/.composer` in `styles.css`; Settings history lost its red "danger zone" border.
+- Parent tabs on phones (under 900px) now fit as icon-over-label, no sideways scroll (uncommitted follow-up). Left as-is (low): legacy unused `.card/.banner/.bubble/.composer` in `styles.css`; Settings history lost its red "danger zone" border.
 
 ## Clay 3D + safe gamification (2026-11-15, done)
 - **Clay-3D look:** the mascot has radial lighting, gloss and rim shading, plus a party mood. Topic cards are clay with depth, tilt and squish.
