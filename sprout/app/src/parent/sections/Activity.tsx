@@ -1,7 +1,8 @@
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import type { Turn } from '../../pipeline/sprout';
 import { useRoute, useSprout } from '../../state';
-import { Icon, Switch, TOPIC_EMOJI, fmtTime, routeBadge, topicLabel } from '../shared';
+import { Icon, Switch, TOPIC_ICON, fmtTime, routeBadge, topicLabel } from '../shared';
+import { MessageCircle } from 'lucide-react';
 
 /** Highlights each hidden original in the raw question. */
 function Marked({ text, hidden }: { text: string; hidden: string[] }): ReactNode {
@@ -18,18 +19,19 @@ function Item({ turn, showText, ageBand }: { turn: Turn; showText: boolean; ageB
   const id = useId();
   const b = routeBadge(turn);
   const topic = turn.guard?.topic ?? (turn.distress ? 'feelings' : 'other');
+  const TopicIcon = TOPIC_ICON[topic] ?? MessageCircle;
   const cloud = turn.steps.filter((s) => s.where === 'cloud');
   return (
     <li className={`p-item${open ? ' open' : ''}`}>
       <button type="button" aria-expanded={open} aria-controls={id} onClick={() => setOpen(!open)}>
-        <span className="emoji" aria-hidden="true">{TOPIC_EMOJI[topic]}</span>
+        <span className="topic-ico"><TopicIcon size={20} strokeWidth={1.75} aria-hidden="true" /></span>
         <span className="meta">
           <span className="title">
             {showText ? turn.question : `${topicLabel(topic)} question`}
           </span>
           <span className="sub">
             <span>{fmtTime(turn.at)}</span>
-            <span className={`p-chip ${b.cls}`}><span aria-hidden="true">{b.emoji}</span> {b.label}</span>
+            <span className={`p-chip ${b.cls}`}><b.Icon size={14} strokeWidth={1.75} aria-hidden="true" />{b.label}</span>
             {turn.redactions.length > 0 && (
               <span className="p-chip outline">{turn.redactions.length} private {turn.redactions.length === 1 ? 'detail' : 'details'} hidden</span>
             )}
@@ -71,12 +73,15 @@ function Item({ turn, showText, ageBand }: { turn: Turn; showText: boolean; ageB
             <p className="p-small"><span className="p-chip care">Answer {turn.referee.verdict === 'block' ? 'blocked' : 'rewritten'}</span> {turn.referee.reason}</p>
           )}
           <div>
-            <h4 className="p-small" style={{ marginBottom: 6 }}>Steps</h4>
+            <h4 className="p-h4">Steps</h4>
             <ul className="p-steps-list">
               {turn.steps.length === 0 && <li className="p-muted">No AI calls (a fixed care message was used).</li>}
               {turn.steps.map((s, i) => (
                 <li key={i}>
-                  <span className={`p-chip ${s.where === 'device' ? 'device' : 'cloud'}`}>{s.where === 'device' ? '🌱 device' : '☁️ cloud'}</span>
+                  <span className={`p-chip ${s.where === 'device' ? 'device' : 'cloud'}`}>
+                    {s.where === 'device' ? <Icon name="sprout" size={14} /> : <Icon name="cloud" size={14} />}
+                    {s.where === 'device' ? 'device' : 'cloud'}
+                  </span>
                   <b>{s.task}</b>
                   <span className="p-muted">{s.latencyMs} ms</span>
                 </li>
@@ -97,7 +102,7 @@ export function Activity() {
 
   return (
     <>
-      <section className="p-card">
+      <section className="p-sec">
         <Switch
           id="show-text"
           label="Show questions and answers"
@@ -107,8 +112,8 @@ export function Activity() {
         />
       </section>
       {list.length === 0 ? (
-        <section className="p-card p-empty">
-          <span style={{ fontSize: '2.5rem' }} aria-hidden="true">🌱</span>
+        <section className="p-sec p-empty">
+          <Icon name="sprout" size={28} />
           <h2>Nothing to show yet</h2>
           <p className="p-muted">Activity appears here once {profile.childName} asks a question.</p>
           <button type="button" className="p-btn primary" onClick={() => navigate('kid')}>Hand it to {profile.childName}</button>

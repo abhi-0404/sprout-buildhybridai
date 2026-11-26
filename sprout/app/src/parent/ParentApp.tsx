@@ -88,7 +88,7 @@ export function ParentApp() {
           <span>Sprout<small>Grown-ups area for {profile.childName}'s device</small></span>
         </div>
         <button type="button" className="p-btn" onClick={() => navigate('kid')}>
-          <Icon name="back" /> <span className="p-back-long">Back to Sprout</span><span className="p-back-short">Back</span>
+          <Icon name="back" size={16} /><span className="p-back-long">Back to Sprout</span><span className="p-back-short">Back</span>
         </button>
       </header>
 
@@ -100,7 +100,7 @@ export function ParentApp() {
               key={s.id} id={`tab-${s.id}`} type="button" role="tab" className="p-tab" aria-selected={sel}
               aria-controls={`panel-${s.id}`} tabIndex={sel ? 0 : -1} onClick={() => go(s.id)}
             >
-              <Icon name={s.icon} />
+              <Icon name={s.icon} size={16} />
               {s.label}
               {s.id === 'alerts' && unseen > 0 && !sel && (
                 <span className="p-badge-count" aria-label={`${unseen} new alerts`}>{unseen}</span>
@@ -115,7 +115,7 @@ export function ParentApp() {
           <h1 ref={main} tabIndex={-1}>{active.title}</h1>
           <p>{active.blurb}</p>
         </div>
-        <div role="tabpanel" id={`panel-${active.id}`} aria-labelledby={`tab-${active.id}`} className="p-stack">
+        <div role="tabpanel" id={`panel-${active.id}`} aria-labelledby={`tab-${active.id}`} className="p-panel">
           {active.id === 'overview' && <Overview go={go} />}
           {active.id === 'alerts' && <Alerts seenAt={seenAt} />}
           {active.id === 'activity' && <Activity />}

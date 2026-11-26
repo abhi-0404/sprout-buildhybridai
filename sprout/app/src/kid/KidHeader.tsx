@@ -1,3 +1,4 @@
+import { Flower2, Lock } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Mascot } from './Mascot';
 
@@ -27,7 +28,7 @@ function StatusPill({ deviceReady, online }: { deviceReady: boolean; online: boo
 function GardenButton({ badges, onOpen }: { badges: number; onOpen: () => void }) {
   return (
     <button type="button" className="k-garden-btn" onClick={onOpen} aria-label={`My garden, ${badges} badges`}>
-      <span className="k-garden-orb" aria-hidden="true">🌻</span>
+      <span className="k-garden-orb" aria-hidden="true"><Flower2 size={18} strokeWidth={1.75} /></span>
       <span className="k-garden-count">{badges}</span>
     </button>
   );
@@ -65,6 +66,7 @@ function GrownUpsButton({ onOpen }: { onOpen: () => void }) {
     <button
       type="button"
       className={`k-hold${phase === 'holding' ? ' is-holding' : ''}`}
+      data-phase={phase}
       aria-label="Grown-ups area. Press and hold for one and a half seconds to open."
       onPointerDown={(e) => { if (e.pointerType !== 'mouse' || e.button === 0) start(); }}
       onPointerUp={cancel}
@@ -77,10 +79,8 @@ function GrownUpsButton({ onOpen }: { onOpen: () => void }) {
     >
       <span className="k-hold-fill" aria-hidden="true" />
       <span className="k-hold-label">
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" focusable="false">
-          <path d="M7 11V8a5 5 0 0 1 10 0v3m-11 0h12a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-        {label}
+        <Lock size={16} strokeWidth={1.75} aria-hidden="true" />
+        <span className="k-hold-text">{label}</span>
       </span>
     </button>
   );
@@ -98,7 +98,7 @@ export function KidHeader({ name, thinking, deviceReady, online, onGrownUps, bad
 }) {
   return (
     <header className="k-header">
-      <Mascot size={52} mood={thinking ? 'thinking' : 'idle'} />
+      <Mascot size={56} mood={thinking ? 'thinking' : 'idle'} />
       <div className="k-greet">
         <h1 className="k-hello">Hi {name || 'friend'}!</h1>
         <div className="k-greet-row">

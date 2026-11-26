@@ -1,3 +1,4 @@
+import { Moon, ShieldCheck } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ask, resolveQueued, type Deps } from '../pipeline/sprout';
 import { firstName } from '../pipeline/redact';
@@ -154,7 +155,8 @@ export function KidApp() {
         <main className="k-main">
           {!deviceReady && online && (
             <p className="k-banner">
-              <span aria-hidden="true">🛡️</span> Safety checks are running in cloud-safe mode. Your private details are still removed on this device first.
+              <ShieldCheck size={18} strokeWidth={1.75} aria-hidden="true" />
+              <span>Safety checks are running in cloud-safe mode. Your private details are still removed on this device first.</span>
             </p>
           )}
           {empty ? (
@@ -182,7 +184,8 @@ export function KidApp() {
           {game.enabled && prog.limitReached && !empty && (
             <div className="k-rest">
               <Mascot size={48} mood="calm" />
-              <p><b>{prog.today} great questions today!</b> Your brain did lots of growing. Maybe time for a break, a book, or playing outside? <span aria-hidden="true">🌙</span></p>
+              <p><b>{prog.today} great questions today!</b> Your brain did lots of growing. Maybe time for a break, a book, or playing outside?</p>
+              <Moon size={22} strokeWidth={1.75} aria-hidden="true" className="k-rest-icon" />
             </div>
           )}
           <div ref={endRef} />

@@ -1,3 +1,5 @@
+import { Lock, Sparkles } from 'lucide-react';
+import { SuggestionIcon } from './icons';
 import { Mascot } from './Mascot';
 import type { Suggestion } from './suggestions';
 
@@ -15,7 +17,7 @@ export function EmptyState({ suggestions, onPick, wonder }: {
       <p className="k-empty-sub">Tap a picture, or ask me your own question.</p>
       {wonder && (
         <button type="button" className="k-wonder" onClick={() => onPick(wonder)}>
-          <span className="k-wonder-orb" aria-hidden="true">✨</span>
+          <span className="k-wonder-orb" aria-hidden="true"><Sparkles size={22} strokeWidth={1.75} /></span>
           <span className="k-wonder-text"><span className="k-wonder-kicker">Today's wonder</span>{wonder}</span>
         </button>
       )}
@@ -23,13 +25,13 @@ export function EmptyState({ suggestions, onPick, wonder }: {
         {suggestions.map((s, i) => (
           <li key={s.text}>
             <button type="button" className={`k-card tint-${i % 6}`} onClick={() => onPick(s.text)}>
-              <span className="k-card-emoji" aria-hidden="true">{s.emoji}</span>
+              <span className="k-card-icon"><SuggestionIcon emoji={s.emoji} size={26} /></span>
               <span className="k-card-text">{s.text}</span>
             </button>
           </li>
         ))}
       </ul>
-      <p className="k-empty-privacy"><span aria-hidden="true">🔒</span> I keep your name and school a secret.</p>
+      <p className="k-empty-privacy"><Lock size={16} strokeWidth={1.75} aria-hidden="true" /> I keep your name and school a secret.</p>
     </section>
   );
 }

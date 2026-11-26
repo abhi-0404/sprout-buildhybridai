@@ -1,12 +1,13 @@
+import { ChevronDown, ChevronUp, Cloud, Heart, Lightbulb, Lock, Smile, Sprout, Square, Volume2, type LucideIcon } from 'lucide-react';
 import type { Turn } from '../pipeline/sprout';
 
 // Under each answer: one friendly "where did this come from" badge (tap to see the secret
 // check) and a row of big buttons, so the child can keep going without typing.
 
-const SOURCE: Record<Turn['answerWhere'], { icon: string; label: string; tone: string }> = {
-  device: { icon: '🌱', label: 'Sprout knew this!', tone: 'device' },
-  cloud: { icon: '☁️', label: 'Asked the big brain', tone: 'cloud' },
-  script: { icon: '💛', label: 'From Sprout', tone: 'script' },
+const SOURCE: Record<Turn['answerWhere'], { icon: LucideIcon; label: string; tone: string }> = {
+  device: { icon: Sprout, label: 'Sprout knew this!', tone: 'device' },
+  cloud: { icon: Cloud, label: 'Asked the big brain', tone: 'cloud' },
+  script: { icon: Heart, label: 'From Sprout', tone: 'script' },
 };
 
 export interface Followups {
@@ -26,6 +27,8 @@ export function SourceBar({ turn, open, panelId, onToggle, canSpeak, speaking, o
   followups?: Followups;
 }) {
   const s = SOURCE[turn.answerWhere];
+  const SourceIcon = s.icon;
+  const Caret = open ? ChevronUp : ChevronDown;
   const secrets = turn.redactions.length > 0;
   return (
     <div className="k-under">
@@ -37,25 +40,26 @@ export function SourceBar({ turn, open, panelId, onToggle, canSpeak, speaking, o
         onClick={onToggle}
         title="See what stayed secret"
       >
-        <span aria-hidden="true">{s.icon}</span>
+        <SourceIcon size={18} strokeWidth={1.75} aria-hidden="true" />
         <span>{s.label}</span>
-        {secrets && <span className="k-badge-lock"><span aria-hidden="true">🔒</span> secrets kept</span>}
-        <span className="k-badge-caret" aria-hidden="true">{open ? '▴' : '▾'}</span>
+        {secrets && <span className="k-badge-lock"><Lock size={14} strokeWidth={1.75} aria-hidden="true" /> secrets kept</span>}
+        <Caret className="k-badge-caret" size={16} strokeWidth={1.75} aria-hidden="true" />
       </button>
       {(canSpeak || followups) && (
         <div className="k-actions">
           {canSpeak && (
             <button type="button" className="k-act" aria-pressed={speaking} onClick={onSpeak}>
-              <span aria-hidden="true">{speaking ? '⏹️' : '🔊'}</span> {speaking ? 'Stop' : 'Read to me'}
+              {speaking ? <Square size={16} strokeWidth={1.75} aria-hidden="true" /> : <Volume2 size={18} strokeWidth={1.75} aria-hidden="true" />}
+              {speaking ? 'Stop' : 'Read to me'}
             </button>
           )}
           {followups && (
             <>
               <button type="button" className="k-act" onClick={followups.more}>
-                <span aria-hidden="true">🤔</span> Tell me more
+                <Lightbulb size={18} strokeWidth={1.75} aria-hidden="true" /> Tell me more
               </button>
               <button type="button" className="k-act" onClick={followups.simpler}>
-                <span aria-hidden="true">🧸</span> Easier please
+                <Smile size={18} strokeWidth={1.75} aria-hidden="true" /> Easier please
               </button>
             </>
           )}

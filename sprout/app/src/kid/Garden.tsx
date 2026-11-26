@@ -1,4 +1,6 @@
+import { Lock, Moon, X } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { BadgeIcon } from './icons';
 import { TOPIC_PLANT, type Badge, type Plant, type Progress } from './game';
 
 /** A clay pot with a plant that grows with curiosity: sprout, bud, flower. */
@@ -40,7 +42,7 @@ function Pot({ plant }: { plant: Plant }) {
 function BadgeCoin({ b }: { b: Badge }) {
   return (
     <li className={`k-coin${b.earned ? ' is-earned' : ''}`} title={b.hint}>
-      <span className="k-coin-face" aria-hidden="true">{b.earned ? b.icon : '?'}</span>
+      <span className="k-coin-face" aria-hidden="true">{b.earned ? <BadgeIcon id={b.id} size={22} /> : <Lock size={18} strokeWidth={1.75} />}</span>
       <span className="k-coin-name">{b.earned ? b.name : 'Locked'}</span>
       <span className="k-coin-hint">{b.hint}</span>
     </li>
@@ -61,7 +63,7 @@ export function Garden({ p, onClose }: { p: Progress; onClose: () => void }) {
       <section className="k-sheet" role="dialog" aria-modal="true" aria-labelledby="k-garden-title" onClick={(e) => e.stopPropagation()}>
         <header className="k-sheet-head">
           <h2 id="k-garden-title">My curiosity garden</h2>
-          <button ref={closeRef} type="button" className="k-sheet-close" onClick={onClose} aria-label="Close garden">✕</button>
+          <button ref={closeRef} type="button" className="k-sheet-close" onClick={onClose} aria-label="Close garden"><X size={20} strokeWidth={1.75} aria-hidden="true" /></button>
         </header>
         {p.plants.length === 0 ? (
           <p className="k-sheet-empty">Ask a question and watch your first plant grow!</p>
@@ -71,7 +73,7 @@ export function Garden({ p, onClose }: { p: Progress; onClose: () => void }) {
         <h3 className="k-sheet-sub">Explorer badges <span>{p.earnedCount} of {p.badges.length}</span></h3>
         <ul className="k-coins">{p.badges.map((b) => <BadgeCoin key={b.id} b={b} />)}</ul>
         {p.limitReached && (
-          <p className="k-rest-note"><span aria-hidden="true">🌙</span> Your garden is resting for today. It grows again tomorrow!</p>
+          <p className="k-rest-note"><Moon size={18} strokeWidth={1.75} aria-hidden="true" /> Your garden is resting for today. It grows again tomorrow!</p>
         )}
       </section>
     </div>

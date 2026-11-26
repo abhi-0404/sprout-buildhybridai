@@ -1,7 +1,9 @@
+import { Hourglass, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import type { Turn } from '../pipeline/sprout';
 import type { ChildProfile } from '../pipeline/types';
 import { CareCard } from './CareCard';
+import { SuggestionIcon } from './icons';
 import { Mascot } from './Mascot';
 import { SeenPanel } from './SeenPanel';
 import { stripQueuedNote } from './seen';
@@ -73,7 +75,7 @@ export function TurnView({ turn, ctx }: { turn: Turn; ctx: TurnCtx }) {
                 {ctx.suggestions.slice(0, 3).map((s) => (
                   <li key={s.text}>
                     <button type="button" className="k-chip" onClick={() => ctx.onAsk(s.text)}>
-                      <span className="k-chip-emoji" aria-hidden="true">{s.emoji}</span>{s.text}
+                      <span className="k-chip-icon"><SuggestionIcon emoji={s.emoji} size={22} /></span>{s.text}
                     </button>
                   </li>
                 ))}
@@ -90,11 +92,11 @@ export function TurnView({ turn, ctx }: { turn: Turn; ctx: TurnCtx }) {
       <div className="k-col-sprout">
         <div className={`k-bubble k-sprout${fresh ? ' is-fresh' : ''}`}>
           {upgraded && (
-            <p className="k-added"><span aria-hidden="true">✨</span> {quick ? 'The quick answer from this device' : 'The big brain added more'}</p>
+            <p className="k-added"><Sparkles size={16} strokeWidth={1.75} aria-hidden="true" /> {quick ? 'The quick answer from this device' : 'The big brain added more'}</p>
           )}
           <p className="k-answer">{shown}</p>
           {turn.queued && ctx.allowCloud && (
-            <p className="k-queued"><span aria-hidden="true">⏳</span> The big brain will add more when we&rsquo;re online</p>
+            <p className="k-queued"><Hourglass size={16} strokeWidth={1.75} aria-hidden="true" /> The big brain will add more when we&rsquo;re online</p>
           )}
           {upgraded && (
             <button type="button" className="k-link" onClick={() => setQuick((q) => !q)}>

@@ -55,7 +55,7 @@ export function ProfileForm({ initial, region, submitLabel, onSubmit, extra, sav
   return (
     <form className="p-form" onSubmit={submit} noValidate>
       <div className="p-privacy-note" role="note">
-        <Icon name="lock" />
+        <Icon name="lock" size={18} />
         <span>These details stay on this device and are used to hide them. They are never sent to the cloud or synced.</span>
       </div>
 
@@ -97,8 +97,8 @@ export function ProfileForm({ initial, region, submitLabel, onSubmit, extra, sav
       </div>
 
       <div className="p-form-cols">
-        <fieldset className="p-field" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="p-label" style={{ fontWeight: 600, fontSize: '.92rem', padding: 0, marginBottom: 6 }}>Age band</legend>
+        <fieldset className="p-field p-fieldset">
+          <legend className="p-label">Age band</legend>
           <div className="p-seg" role="radiogroup" aria-label="Age band">
             {(['6-8', '9-12'] as AgeBand[]).map((a) => (
               <label key={a}>
@@ -109,8 +109,8 @@ export function ProfileForm({ initial, region, submitLabel, onSubmit, extra, sav
           </div>
           <span className="p-help">Sets the reading level and tone of answers.</span>
         </fieldset>
-        <fieldset className="p-field" style={{ border: 0, padding: 0, margin: 0 }}>
-          <legend className="p-label" style={{ fontWeight: 600, fontSize: '.92rem', padding: 0, marginBottom: 6 }}>Region</legend>
+        <fieldset className="p-field p-fieldset">
+          <legend className="p-label">Region</legend>
           <div className="p-seg" role="radiogroup" aria-label="Region for helplines">
             {([['US', 'United States'], ['IN', 'India']] as [Region, string][]).map(([r, label]) => (
               <label key={r}>
@@ -126,7 +126,7 @@ export function ProfileForm({ initial, region, submitLabel, onSubmit, extra, sav
       <div className="p-row">
         <button type="submit" className="p-btn primary">{submitLabel}</button>
         {extra}
-        {savedNote && <span className="p-chip device" role="status">{savedNote}</span>}
+        {savedNote && <span className="p-chip device" role="status"><Icon name="check" size={14} />{savedNote}</span>}
       </div>
     </form>
   );

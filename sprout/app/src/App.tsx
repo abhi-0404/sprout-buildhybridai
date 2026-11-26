@@ -1,3 +1,4 @@
+import { FlaskConical } from 'lucide-react';
 import { KidApp } from './kid/KidApp';
 import { ParentApp } from './parent/ParentApp';
 import { Welcome } from './parent/Welcome';
@@ -18,7 +19,7 @@ function Shell() {
     <>
       {isDemo && (
         <aside className="demo-ribbon" aria-label="Demo mode">
-          <span aria-hidden="true">🧪</span> Demo: simulated AI, real safety checks
+          <FlaskConical size={14} strokeWidth={1.75} aria-hidden="true" style={{ verticalAlign: '-2px', marginRight: 6 }} />Demo: simulated AI, real safety checks
         </aside>
       )}
       {area === 'welcome' && <Welcome />}

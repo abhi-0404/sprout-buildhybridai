@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { BadgeIcon } from './icons';
 import type { Badge } from './game';
 import { Mascot } from './Mascot';
 
@@ -22,7 +23,7 @@ export function Celebrate({ badge, onDone }: { badge: Badge; onDone: () => void 
         <Mascot size={72} mood="party" />
         <div>
           <p className="k-celebrate-kicker">New badge!</p>
-          <p className="k-celebrate-name"><span aria-hidden="true">{badge.icon}</span> {badge.name}</p>
+          <p className="k-celebrate-name"><BadgeIcon id={badge.id} size={22} /> {badge.name}</p>
         </div>
       </div>
     </div>

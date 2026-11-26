@@ -8,7 +8,7 @@ export function GameSettings() {
   const update = (next: Game) => { setG(next); saveGame(next); };
   return (
     <div className="p-stack-sm">
-      <p className="p-card-sub">
+      <p className="p-sec-sub">
         Sprout rewards curiosity, not screen time: a garden that grows with new topics and badges for exploring.
         There are no streaks to lose, safety moments never earn rewards, and after the daily limit rewards pause and Sprout suggests a break.
       </p>

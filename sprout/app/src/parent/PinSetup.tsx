@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { hasPin, isValidPin, setPin } from '../lib/pin';
+import { Icon } from './shared';
 
 /** Set or change the parent PIN. The PIN is stored only as a salted hash on this device. */
 export function PinSetup({ onDone }: { onDone?: () => void }) {
@@ -24,7 +25,7 @@ export function PinSetup({ onDone }: { onDone?: () => void }) {
 
   return (
     <form className="p-stack-sm" onSubmit={(e) => void submit(e)}>
-      <p className="p-card-sub">
+      <p className="p-sec-sub">
         {exists
           ? 'A PIN is set. Enter a new one to change it.'
           : 'Older kids can solve the math question. A PIN keeps the grown-ups area (alerts and settings) for you.'}
@@ -41,7 +42,7 @@ export function PinSetup({ onDone }: { onDone?: () => void }) {
             value={again} onChange={(e) => { setAgain(digits(e.target.value)); setMsg(null); }} />
         </label>
       </div>
-      {msg && <p className={msg.ok ? 'p-chip device' : 'p-error'} role={msg.ok ? 'status' : 'alert'} style={{ width: 'fit-content' }}>{msg.text}</p>}
+      {msg && <p className={msg.ok ? 'p-chip device' : 'p-error'} role={msg.ok ? 'status' : 'alert'}>{msg.ok && <Icon name="check" size={14} />}{msg.text}</p>}
       <div><button type="submit" className="p-btn primary" disabled={!pin || !again}>{exists ? 'Change PIN' : 'Set PIN'}</button></div>
     </form>
   );

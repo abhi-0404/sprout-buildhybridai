@@ -1,3 +1,4 @@
+import { Heart } from 'lucide-react';
 import { Mascot } from './Mascot';
 
 interface Parsed {
@@ -48,7 +49,8 @@ export function CareCard({ answer, notified }: { answer: string; notified: boole
       )}
       {notified && (
         <p className="k-care-note">
-          <span aria-hidden="true">💛</span> Sprout saved this for your grown-up to see. Please also tell a grown-up you trust. You did nothing wrong.
+          <Heart size={18} strokeWidth={1.75} aria-hidden="true" className="k-care-heart" />
+          <span>Sprout saved this for your grown-up to see. Please also tell a grown-up you trust. You did nothing wrong.</span>
         </p>
       )}
     </div>

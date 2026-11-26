@@ -52,9 +52,9 @@ export function DeviceCheck() {
   };
 
   return (
-    <section className="p-card p-stack-sm" aria-labelledby="dc-h">
-      <h2 id="dc-h" className="p-card-title">Device check</h2>
-      <p className="p-card-sub">Test the on-device model and see where each test ran.</p>
+    <section className="p-sec p-stack-sm" aria-labelledby="dc-h">
+      <h2 id="dc-h" className="p-sec-title">Device check</h2>
+      <p className="p-sec-sub">Test the on-device model and see where each test ran.</p>
       <div className="p-row">
         <span className={`p-chip ${st.cls}`} role="status">On-device model: {st.label}</span>
         <button type="button" className="p-btn small" onClick={check} disabled={busy}>Check again</button>

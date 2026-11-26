@@ -1,16 +1,23 @@
 :root {
-  --bg: #f6faf5; --surface: #ffffff; --text: #1d2a22; --muted: #5d6b62; --line: #dbe6dc;
-  --brand: #2f7d4f; --brand-soft: #e3f2e7; --cloud: #2e6bd1; --cloud-soft: #e5eefc;
-  --warm: #b26a00; --warm-soft: #fff3dc; --me: #2f7d4f; --me-text: #ffffff;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color-scheme: light dark;
+  /* Sprout tokens: paper, ink, moss. One accent per screen; cloud = sky, care = honey. */
+  --bg: #fbfcf8; --surface: #ffffff; --text: #18231c; --muted: #5a675e; --line: #e3e8e1;
+  --brand: #2f6b45; --brand-soft: #e8f1ea; --cloud: #3a6fb0; --cloud-soft: #e8eff8;
+  --warm: #8f5a0d; --warm-soft: #fbf1df; --me: #2f6b45; --me-text: #ffffff;
+  --radius-s: 8px; --radius-m: 14px; --radius-l: 22px;
+  --focus: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
+  font-family: system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", Roboto, sans-serif;
+  font-size: 16px; line-height: 1.5; color-scheme: light dark;
+  -webkit-font-smoothing: antialiased;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #111713; --surface: #1a221d; --text: #e6efe8; --muted: #9db0a3; --line: #2b372f;
-    --brand: #5fbf84; --brand-soft: #1f3327; --cloud: #7aa7f5; --cloud-soft: #1c2738;
-    --warm: #f0b25a; --warm-soft: #33291a; --me: #3c8f5c;
+    --bg: #121613; --surface: #181d19; --text: #e7ede8; --muted: #9aa89e; --line: #283029;
+    --brand: #7cc296; --brand-soft: #1c2b21; --cloud: #8fb3e6; --cloud-soft: #1a2433;
+    --warm: #e2ad5c; --warm-soft: #2d2517; --me: #2f6b45;
   }
 }
+:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; box-shadow: var(--focus); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); }
 .app { max-width: 820px; margin: 0 auto; padding: 0 16px 24px; min-height: 100vh; display: flex; flex-direction: column; }

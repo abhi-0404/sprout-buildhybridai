@@ -1,3 +1,4 @@
+import { Cloud, Lock, ShieldCheck, Sprout } from 'lucide-react';
 import { useState } from 'react';
 import type { Step, Turn } from '../pipeline/sprout';
 import type { ChildProfile } from '../pipeline/types';
@@ -46,7 +47,7 @@ function BeforeAfter({ original, rewritten, reason }: { original: string; rewrit
         <span className="k-seen-who">Sprout's guardian made it</span>
         <p className="k-ba-after">{rewritten}</p>
       </div>
-      {reason && <p className="k-ba-why"><span aria-hidden="true">🛡️</span> Why: {reason}</p>}
+      {reason && <p className="k-ba-why"><ShieldCheck size={16} strokeWidth={1.75} aria-hidden="true" /> <span>Why: {reason}</span></p>}
     </div>
   );
 }
@@ -58,7 +59,7 @@ export function SeenPanel({ turn, profile, id }: { turn: Turn; profile: ChildPro
 
   return (
     <section id={id} className="k-seen" aria-label="Secret check">
-      <h3 className="k-seen-title"><span aria-hidden="true">🔒</span> Secret check</h3>
+      <h3 className="k-seen-title"><Lock size={18} strokeWidth={1.75} aria-hidden="true" /> Secret check</h3>
       <div className="k-seen-rows">
         <div className="k-seen-row">
           <span className="k-seen-who">You said</span>
@@ -74,13 +75,13 @@ export function SeenPanel({ turn, profile, id }: { turn: Turn; profile: ChildPro
             <p>
               {seen.map((s, i) =>
                 s.kind
-                  ? <span key={i} className="k-token">🔒 {KIND_LABEL[s.kind]}</span>
+                  ? <span key={i} className="k-token"><Lock size={12} strokeWidth={2} aria-hidden="true" />{KIND_LABEL[s.kind]}</span>
                   : <span key={i}>{s.text}</span>,
               )}
             </p>
           </div>
         ) : (
-          <p className="k-seen-none"><span aria-hidden="true">🌱</span> This stayed right here. Nobody else saw it!</p>
+          <p className="k-seen-none"><Sprout size={18} strokeWidth={1.75} aria-hidden="true" /> This stayed right here. Nobody else saw it!</p>
         )}
       </div>
 
@@ -90,14 +91,14 @@ export function SeenPanel({ turn, profile, id }: { turn: Turn; profile: ChildPro
           <ul className="k-steps-list">
             {turn.steps.map((s, i) => (
               <li key={i}>
-                <span aria-hidden="true">{s.where === 'device' ? '🌱' : '☁️'}</span>
+                {s.where === 'device' ? <Sprout size={16} strokeWidth={1.75} aria-hidden="true" /> : <Cloud size={16} strokeWidth={1.75} aria-hidden="true" />}
                 <span className="k-step-name">{TASK_LABEL[s.task]}</span>
                 <span className="k-step-where">{s.where === 'device' ? 'on this device' : 'cloud (Gemini)'}</span>
                 <span className="k-step-ms">{s.latencyMs} ms</span>
               </li>
             ))}
           </ul>
-          {turn.referee && <p className="k-referee">🛡️ {refereeLine(turn.referee)}</p>}
+          {turn.referee && <p className="k-referee"><ShieldCheck size={16} strokeWidth={1.75} aria-hidden="true" /> <span>{refereeLine(turn.referee)}</span></p>}
           {/* The raw answer was judged too heavy for the child, so it lives only behind the grown-ups fold. */}
           {turn.referee?.verdict === 'simplify' && turn.referee.original && (
             <BeforeAfter original={turn.referee.original} rewritten={turn.answer} reason={turn.referee.reason} />

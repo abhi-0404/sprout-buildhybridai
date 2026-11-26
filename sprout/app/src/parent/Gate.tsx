@@ -59,8 +59,8 @@ export function Gate({ onUnlock, onBack }: { onUnlock: () => void; onBack: () =>
 
   return (
     <main className="p-root p-gate">
-      <div className="p-card p-gate-card">
-        <span className="lock"><Icon name="lock" /></span>
+      <div className="p-gate-card">
+        <span className="lock"><Icon name="lock" size={24} /></span>
         <h1>Grown-ups only</h1>
         <p className="p-muted">
           This area has settings and your child's safety alerts. {usePin ? 'Enter your parent PIN.' : 'Answer to continue.'}

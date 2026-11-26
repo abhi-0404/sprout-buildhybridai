@@ -6,14 +6,14 @@ import {
   type FamilyAlert, type FamilyLink, type FamilyUser, type JoinRequest,
 } from '../../lib/family';
 import { useSprout } from '../../state';
-import { KIND_LABEL, fmtTime } from '../shared';
+import { Icon, KIND_LABEL, fmtTime } from '../shared';
 
 function NotConnected() {
   return (
-    <section className="p-card p-empty">
-      <span style={{ fontSize: '2.5rem' }} aria-hidden="true">📱</span>
+    <section className="p-sec p-empty">
+      <Icon name="phone" size={28} />
       <h2>Connect Firebase to sync alerts to your phone</h2>
-      <p className="p-muted" style={{ maxWidth: 460 }}>
+      <p className="p-muted">
         With Firebase connected, a safety alert reaches your own phone within seconds, even if you are not holding your child's device.
         Alerts carry only the type, level and time. Never the message.
       </p>
@@ -83,20 +83,20 @@ function FamilySync() {
     void run(async () => updateLink(await joinFamily(code)));
   };
 
-  if (user === undefined) return <section className="p-card"><p className="p-muted">Checking sign-in...</p></section>;
+  if (user === undefined) return <section className="p-sec"><p className="p-muted">Checking sign-in...</p></section>;
 
   return (
     <>
       {!user ? (
-        <section className="p-card p-stack-sm">
-          <h2 className="p-card-title">Sign in to sync alerts</h2>
-          <p className="p-card-sub">Use your Google account. Sprout syncs only alert type, level and time.</p>
+        <section className="p-sec p-stack-sm">
+          <h2 className="p-sec-title">Sign in to sync alerts</h2>
+          <p className="p-sec-sub">Use your Google account. Sprout syncs only alert type, level and time.</p>
           <div><button type="button" className="p-btn primary" onClick={() => run(async () => void (await signInWithGoogle()))} disabled={busy}>Sign in with Google</button></div>
         </section>
       ) : (
-        <section className="p-card p-spread">
+        <section className="p-sec p-spread">
           <div>
-            <h2 className="p-card-title">Signed in</h2>
+            <h2 className="p-sec-title">Signed in</h2>
             <p className="p-muted p-small">{user.name ?? user.email ?? 'Parent'}{user.email && user.name ? ` (${user.email})` : ''}</p>
           </div>
           <button type="button" className="p-btn small" onClick={() => run(signOutUser)} disabled={busy}>Sign out</button>
@@ -105,14 +105,14 @@ function FamilySync() {
 
       {user && !link && (
         <div className="p-grid-2">
-          <section className="p-card p-stack-sm">
-            <h2 className="p-card-title">Start a family</h2>
-            <p className="p-card-sub">Create a family and get a 6-digit code for your partner's phone.</p>
+          <section className="p-sec p-stack-sm">
+            <h2 className="p-sec-title">Start a family</h2>
+            <p className="p-sec-sub">Create a family and get a 6-digit code for your partner's phone.</p>
             <div><button type="button" className="p-btn primary" onClick={() => run(async () => updateLink(await createFamily()))} disabled={busy}>Create family</button></div>
           </section>
-          <section className="p-card">
-            <h2 className="p-card-title">Join a family</h2>
-            <p className="p-card-sub">Enter the code from the other parent. They will approve you.</p>
+          <section className="p-sec">
+            <h2 className="p-sec-title">Join a family</h2>
+            <p className="p-sec-sub">Enter the code from the other parent. They will approve you.</p>
             <form className="p-form" onSubmit={onJoin}>
               <div className="p-field">
                 <label htmlFor="join-code">6-digit code</label>
@@ -125,12 +125,12 @@ function FamilySync() {
       )}
 
       {user && link?.role === 'pending' && (
-        <section className="p-card p-callout warn" role="status">
-          <span aria-hidden="true">⏳</span>
-          <div>
+        <section className="p-callout warn" role="status">
+          <Icon name="hourglass" />
+          <div className="p-stack-sm">
             <strong>Waiting for approval</strong>
             <p className="p-small">The family owner needs to approve you on their device. This page updates by itself.</p>
-            <button type="button" className="p-btn small" onClick={() => updateLink(null)} style={{ marginTop: 8 }}>Cancel request</button>
+            <div><button type="button" className="p-btn small" onClick={() => updateLink(null)}>Cancel request</button></div>
           </div>
         </section>
       )}
@@ -138,15 +138,15 @@ function FamilySync() {
       {member && (
         <>
           {owner && member.code && (
-            <section className="p-card p-stack-sm">
-              <h2 className="p-card-title">Your family code</h2>
+            <section className="p-sec p-stack-sm">
+              <h2 className="p-sec-title">Your family code</h2>
               <div className="p-code" aria-label={`Code ${member.code.split('').join(' ')}`}>{member.code}</div>
               <p className="p-muted p-small">Share it with another parent. They can only join after you approve them below.</p>
             </section>
           )}
           {owner && requests.length > 0 && (
-            <section className="p-card p-stack-sm" aria-labelledby="fam-req">
-              <h2 id="fam-req" className="p-card-title">Join requests</h2>
+            <section className="p-sec p-stack-sm" aria-labelledby="fam-req">
+              <h2 id="fam-req" className="p-sec-title">Join requests</h2>
               <ul className="p-timeline">
                 {requests.map((r) => (
                   <li key={r.uid} className="p-spread">
@@ -160,9 +160,9 @@ function FamilySync() {
               </ul>
             </section>
           )}
-          <section className="p-card p-stack-sm" aria-labelledby="fam-alerts">
+          <section className="p-sec p-stack-sm" aria-labelledby="fam-alerts">
             <div className="p-spread">
-              <h2 id="fam-alerts" className="p-card-title">Alerts synced to this family</h2>
+              <h2 id="fam-alerts" className="p-sec-title">Alerts synced to this family</h2>
               <span className={`p-chip ${online ? 'device' : 'care'}`}>{online ? 'Online' : 'Offline: alerts will send when you reconnect'}</span>
             </div>
             {remote.length === 0 ? (
@@ -179,7 +179,7 @@ function FamilySync() {
             )}
             <p className="p-muted p-small">Only the type, level and time are stored online. Never the message.</p>
           </section>
-          <section className="p-card p-spread">
+          <section className="p-sec p-spread">
             <p className="p-muted p-small">Stop syncing from this device. The family stays in the cloud.</p>
             <button type="button" className="p-btn small danger" onClick={() => updateLink(null)}>Leave on this device</button>
           </section>

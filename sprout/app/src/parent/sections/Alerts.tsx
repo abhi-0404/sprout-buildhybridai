@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useRoute, useSprout } from '../../state';
-import { EMERGENCY, GUIDANCE, KIND_LABEL, fmtTime, getAlerts, regionOf } from '../shared';
+import { EMERGENCY, GUIDANCE, Icon, KIND_LABEL, fmtTime, getAlerts, regionOf } from '../shared';
 
 export function Alerts({ seenAt }: { seenAt: number }) {
   const { turns, policy, profile } = useSprout();
@@ -10,10 +10,10 @@ export function Alerts({ seenAt }: { seenAt: number }) {
 
   if (alerts.length === 0) {
     return (
-      <section className="p-card p-empty">
-        <span style={{ fontSize: '2.5rem' }} aria-hidden="true">💛</span>
+      <section className="p-sec p-empty">
+        <Icon name="heart" size={28} />
         <h2>No alerts</h2>
-        <p className="p-muted" style={{ maxWidth: 440 }}>
+        <p className="p-muted">
           If {profile.childName} says something that sounds sad, scared or unsafe, Sprout replies with a calm fixed message and the moment will show up here, with guidance for talking about it.
         </p>
         <button type="button" className="p-btn" onClick={() => navigate('parent/activity')}>See activity</button>
@@ -23,7 +23,7 @@ export function Alerts({ seenAt }: { seenAt: number }) {
 
   return (
     <>
-      <p className="p-muted p-small">
+      <p className="p-muted p-small p-intro">
         You see the message because this is your own device. Alerts synced to your phone never include it.
         Sprout is a helper, not a counselor: these notes are starting points for a conversation.
       </p>
@@ -32,7 +32,7 @@ export function Alerts({ seenAt }: { seenAt: number }) {
           const g = GUIDANCE[kind];
           return (
             <li key={turn.id}>
-              <article className={`p-card p-alert ${level}`} aria-label={`${KIND_LABEL[kind]}, ${level}`}>
+              <article className={`p-alert ${level}`} aria-label={`${KIND_LABEL[kind]}, ${level}`}>
                 <div className="p-spread">
                   <h2>{KIND_LABEL[kind]}</h2>
                   <div className="p-row">
@@ -41,13 +41,13 @@ export function Alerts({ seenAt }: { seenAt: number }) {
                     <span className="p-muted p-small">{fmtTime(turn.at)}</span>
                   </div>
                 </div>
-                <blockquote className="msg" style={{ margin: 0 }}>{turn.question}</blockquote>
+                <blockquote className="msg">{turn.question}</blockquote>
                 <div className="guide">
                   <p><strong>{g.intro}</strong></p>
                   <ul>{g.tips.map((tip) => <li key={tip}>{tip}</li>)}</ul>
                 </div>
                 <div>
-                  <h3 className="p-small" style={{ marginBottom: 6 }}>Helplines</h3>
+                  <h3 className="p-h3">Helplines</h3>
                   <ul className="p-lines">
                     {policy.helplines.map((h) => (
                       <li key={h.label}><span>{h.label}</span><b>{h.contact}</b></li>

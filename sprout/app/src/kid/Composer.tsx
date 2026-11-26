@@ -1,3 +1,4 @@
+import { Mic, Send } from 'lucide-react';
 import { useRef } from 'react';
 import { useLocalVoiceInput } from './speech';
 
@@ -37,21 +38,16 @@ export function Composer({ value, onChange, onSend, busy }: {
             aria-label={voice.listening ? 'Stop listening' : 'Speak your question'}
             onClick={() => { voice.toggle(); input.current?.focus(); }}
           >
-            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-              <rect x="9" y="3" width="6" height="12" rx="3" fill="currentColor" />
-              <path d="M5 11a7 7 0 0 0 14 0M12 18v3" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+            <Mic size={22} strokeWidth={1.75} aria-hidden="true" />
           </button>
         )}
         <button type="submit" className="k-round k-send" disabled={!canSend} aria-label="Send question">
-          <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
-            <path d="M5 12h13m-6-6 6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <Send size={22} strokeWidth={1.75} aria-hidden="true" />
         </button>
       </form>
       {(voice.listening || voice.problem) && (
         <p className="k-voice-note" role="status">
-          {voice.problem || '🎤 Listening happens on this device. Your voice never leaves it.'}
+          {voice.problem || 'Listening happens on this device. Your voice never leaves it.'}
         </p>
       )}
     </div>

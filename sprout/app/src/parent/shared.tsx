@@ -1,4 +1,9 @@
-import type { ReactNode } from 'react';
+import {
+  Activity, Apple, ArrowLeft, Bell, BookOpen, Check, ChevronDown, Cloud, Divide, FlaskConical, Gamepad2, Handshake,
+  Heart, HeartPulse, Hourglass, House, Landmark, Laptop, Leaf, Lock, Map as MapIcon, MessageCircle, Music,
+  NotebookText, Palette, PawPrint, Rocket, Settings, ShieldAlert, ShieldCheck, Smartphone, Sprout, Trophy, Users,
+  type LucideIcon,
+} from 'lucide-react';
 import type { Helpline } from '../pipeline/distress';
 import type { Turn } from '../pipeline/sprout';
 import type { DistressKind, Topic } from '../pipeline/types';
@@ -6,33 +11,20 @@ import type { DistressKind, Topic } from '../pipeline/types';
 // Small shared pieces for the parent experience: icons, formatting, calm guidance copy.
 
 export type IconName =
-  | 'home' | 'bell' | 'list' | 'note' | 'gear' | 'people' | 'lock' | 'shield' | 'chevron' | 'back' | 'leaf';
+  | 'home' | 'bell' | 'list' | 'note' | 'gear' | 'people' | 'lock' | 'shield' | 'shield-alert'
+  | 'chevron' | 'back' | 'sprout' | 'cloud' | 'heart' | 'check' | 'hourglass' | 'phone';
 
-const PATHS: Record<IconName, ReactNode> = {
-  home: <path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10" />,
-  bell: <path d="M6 9a6 6 0 1112 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 004 0" />,
-  list: <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />,
-  note: <path d="M6 3h9l4 4v14H6zM14 3v5h5M9 13h7M9 17h5" />,
-  gear: (
-    <>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1" />
-    </>
-  ),
-  people: <path d="M16 20v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2M9.5 10a3.5 3.5 0 100-7 3.5 3.5 0 000 7zM21 20v-2a4 4 0 00-3-3.9M16 3.1a3.5 3.5 0 010 6.8" />,
-  lock: <path d="M6 11h12v9H6zM8 11V8a4 4 0 118 0v3" />,
-  shield: <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4" />,
-  chevron: <path d="M6 9l6 6 6-6" />,
-  back: <path d="M15 5l-7 7 7 7" />,
-  leaf: <path d="M5 19c0-8 5-14 15-14 0 10-6 15-14 15M5 19c2-5 5-8 9-10" />,
+const ICONS: Record<IconName, LucideIcon> = {
+  home: House, bell: Bell, list: Activity, note: NotebookText, gear: Settings, people: Users,
+  lock: Lock, shield: ShieldCheck, 'shield-alert': ShieldAlert, chevron: ChevronDown, back: ArrowLeft,
+  sprout: Sprout, cloud: Cloud, heart: Heart, check: Check, hourglass: Hourglass,
+  phone: Smartphone,
 };
 
-export function Icon({ name }: { name: IconName }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      {PATHS[name]}
-    </svg>
-  );
+/** Line icon (lucide). Decorative: always hidden from screen readers, the label sits beside it. */
+export function Icon({ name, size = 18 }: { name: IconName; size?: number }) {
+  const Cmp = ICONS[name];
+  return <Cmp size={size} strokeWidth={1.75} aria-hidden="true" focusable="false" />;
 }
 
 export function Logo() {
@@ -66,7 +58,7 @@ export function Switch({
   );
 }
 
-export const usd = (n: number) => `$${n < 0.01 ? n.toFixed(4) : n.toFixed(2)}`;
+export const usd = (n: number) => (n === 0 ? '$0.00' : `$${n < 0.01 ? n.toFixed(4) : n.toFixed(2)}`);
 
 const TIME = new Intl.DateTimeFormat(undefined, { weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
 export const fmtTime = (at: number) => TIME.format(new Date(at));
@@ -81,19 +73,19 @@ export function ago(at: number, now = Date.now()): string {
   return d === 1 ? 'yesterday' : `${d} days ago`;
 }
 
-export const TOPIC_EMOJI: Record<Topic, string> = {
-  science: '🔬', animals: '🐾', space: '🚀', nature: '🌿', math: '➗', reading: '📖', history: '🏛️',
-  geography: '🗺️', body: '🫀', feelings: '💛', friends: '🤝', tech: '💻', games: '🎮', art: '🎨',
-  music: '🎵', sports: '⚽', food: '🍎', other: '💬',
+export const TOPIC_ICON: Record<Topic, LucideIcon> = {
+  science: FlaskConical, animals: PawPrint, space: Rocket, nature: Leaf, math: Divide, reading: BookOpen,
+  history: Landmark, geography: MapIcon, body: HeartPulse, feelings: Heart, friends: Handshake, tech: Laptop,
+  games: Gamepad2, art: Palette, music: Music, sports: Trophy, food: Apple, other: MessageCircle,
 };
 
 export const topicLabel = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
-/** Route badge for a turn: 🌱 on device, ☁️ big brain, 💛 care message. */
-export function routeBadge(t: Turn): { emoji: string; label: string; cls: 'device' | 'cloud' | 'care' } {
-  if (t.answerWhere === 'script') return { emoji: '💛', label: 'Care message', cls: 'care' };
-  if (t.answerWhere === 'cloud') return { emoji: '☁️', label: 'Big brain', cls: 'cloud' };
-  return { emoji: '🌱', label: 'On this device', cls: 'device' };
+/** Route badge for a turn: sprout = on device, cloud = big brain, heart = care message. */
+export function routeBadge(t: Turn): { Icon: LucideIcon; label: string; cls: 'device' | 'cloud' | 'care' } {
+  if (t.answerWhere === 'script') return { Icon: Heart, label: 'Care message', cls: 'care' };
+  if (t.answerWhere === 'cloud') return { Icon: Cloud, label: 'Big brain', cls: 'cloud' };
+  return { Icon: Sprout, label: 'On this device', cls: 'device' };
 }
 
 export const KIND_LABEL: Record<DistressKind, string> = {

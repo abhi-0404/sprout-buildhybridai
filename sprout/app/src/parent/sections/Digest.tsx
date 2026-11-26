@@ -69,9 +69,9 @@ export function Digest() {
 
   return (
     <>
-      <section className="p-card">
-        <h2 className="p-card-title">This week in a few sentences</h2>
-        <p className="p-card-sub">
+      <section className="p-sec">
+        <h2 className="p-sec-title">This week in a few sentences</h2>
+        <p className="p-sec-sub">
           The big brain writes the note from the numbers below. It never sees a question, an answer or a name.
         </p>
         <div className="p-row">
@@ -81,11 +81,11 @@ export function Digest() {
           {none && <span className="p-muted p-small">No questions in the last 7 days yet.</span>}
           {!online && !isDemo && <span className="p-muted p-small">You are offline.</span>}
         </div>
-        {error && <p className="p-callout danger" role="alert" style={{ marginTop: 14 }}>{error}</p>}
+        {error && <p className="p-callout danger" role="alert">{error}</p>}
       </section>
 
       {saved && (
-        <section className="p-card p-stack-sm" aria-live="polite">
+        <section className="p-sec p-stack-sm" aria-live="polite">
           <div className="p-spread">
             <h2>Your weekly note</h2>
             <span className="p-muted p-small">Written {fmtTime(saved.at)}</span>
@@ -100,7 +100,7 @@ export function Digest() {
       )}
 
       {!saved && (
-        <section className="p-card">
+        <section className="p-sec">
           <details className="p-details">
             <summary>What would be sent</summary>
             <pre>{preview}</pre>

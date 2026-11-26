@@ -3,7 +3,7 @@ import { DEFAULT_HELPLINES } from '../pipeline/distress';
 import { EMPTY_PROFILE, useRoute, useSprout } from '../state';
 import { runSample, SAMPLE_PROFILE } from '../lib/sample';
 import { ProfileForm } from './ProfileForm';
-import { Icon, Logo, regionOf } from './shared';
+import { Icon, Logo, regionOf, type IconName } from './shared';
 import './parent.css';
 
 // First run: a 3-step onboarding for the parent (the buyer). The last step collects the
@@ -19,7 +19,7 @@ function DeviceVsCloud() {
       <text x="99" y="90" textAnchor="middle" fontSize="12" style={{ fill: 'var(--warm)' }}>Aarav, Green Park School</text>
       <rect x="28" y="108" width="142" height="30" rx="15" fill="var(--brand-soft)" />
       <text x="99" y="128" textAnchor="middle" fontSize="12">why do volcanoes erupt?</text>
-      <text x="99" y="164" textAnchor="middle" fontSize="11" className="muted">🌱 guardian runs here</text>
+      <text x="99" y="164" textAnchor="middle" fontSize="11" className="muted">guardian runs here</text>
       {/* airlock */}
       <path d="M200 120h80" className="stroke" strokeWidth="3" strokeDasharray="6 6" fill="none" />
       <path d="M272 112l10 8-10 8" className="stroke" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
@@ -33,15 +33,15 @@ function DeviceVsCloud() {
       <rect x="338" y="108" width="128" height="28" rx="14" fill="var(--surface)" />
       <text x="402" y="127" textAnchor="middle" fontSize="12">why do volcanoes erupt?</text>
       <text x="402" y="40" textAnchor="middle" fontSize="13" fontWeight="700">The big brain</text>
-      <text x="402" y="184" textAnchor="middle" fontSize="11" className="muted">☁️ sees only this</text>
+      <text x="402" y="184" textAnchor="middle" fontSize="11" className="muted">sees only this</text>
     </svg>
   );
 }
 
-const HOW: { ico: string; cls: string; title: string; text: string }[] = [
-  { ico: '🌱', cls: '', title: 'An on-device guardian', text: 'A small AI on this device checks every message, answers simple questions offline, and hides your child\'s name, school and address first.' },
-  { ico: '☁️', cls: 'cloud', title: 'The big brain sees only clean text', text: 'Hard "why" questions go to a bigger model, but only after the private details are removed. The guardian checks its answer before your child sees it.' },
-  { ico: '💛', cls: 'care', title: 'You get alerts, not transcripts', text: 'If your child seems sad, scared or unsafe, Sprout replies with a calm, fixed message and tells you. Their everyday questions stay private to them.' },
+const HOW: { ico: IconName; cls: string; title: string; text: string }[] = [
+  { ico: 'sprout', cls: '', title: 'An on-device guardian', text: 'A small AI on this device checks every message, answers simple questions offline, and hides your child\'s name, school and address first.' },
+  { ico: 'cloud', cls: 'cloud', title: 'The big brain sees only clean text', text: 'Hard "why" questions go to a bigger model, but only after the private details are removed. The guardian checks its answer before your child sees it.' },
+  { ico: 'heart', cls: 'care', title: 'You get alerts, not transcripts', text: 'If your child seems sad, scared or unsafe, Sprout replies with a calm, fixed message and tells you. Their everyday questions stay private to them.' },
 ];
 
 export function Welcome() {
@@ -77,13 +77,16 @@ export function Welcome() {
   return (
     <main className="p-root p-welcome">
       <div className="p-welcome-inner">
-        <div className="p-brand"><Logo /> Sprout</div>
-        <ol className="p-steps" aria-label={`Step ${step + 1} of 3`}>
+        <div className="p-spread">
+          <div className="p-brand"><Logo /> Sprout</div>
+          <span className="p-muted p-small">Step {step + 1} of 3</span>
+        </div>
+        <ol className="p-steps" aria-hidden="true">
           {[0, 1, 2].map((i) => <li key={i} className={i <= step ? 'done' : ''} />)}
         </ol>
 
         {step === 0 && (
-          <section className="p-card p-hero-card" aria-labelledby="w-h">
+          <section className="p-hero" aria-labelledby="w-h">
             <h1 id="w-h" ref={head} tabIndex={-1}>An AI your child can use. Their identity never leaves this device.</h1>
             <p className="p-lead">Sprout lets your 6 to 12 year old ask big questions, with a guardian on the device that hides who they are before anything goes online.</p>
             <DeviceVsCloud />
@@ -97,12 +100,12 @@ export function Welcome() {
         )}
 
         {step === 1 && (
-          <section className="p-card p-hero-card" aria-labelledby="w-h">
+          <section className="p-hero" aria-labelledby="w-h">
             <h1 id="w-h" ref={head} tabIndex={-1}>How Sprout keeps your child safe</h1>
             <ul className="p-list">
               {HOW.map((h) => (
                 <li key={h.title}>
-                  <span className={`ico ${h.cls}`} aria-hidden="true">{h.ico}</span>
+                  <span className={`ico ${h.cls}`}><Icon name={h.ico} size={20} /></span>
                   <div><strong>{h.title}</strong><span className="p-muted">{h.text}</span></div>
                 </li>
               ))}
@@ -115,7 +118,7 @@ export function Welcome() {
         )}
 
         {step === 2 && (
-          <section className="p-card p-hero-card" aria-labelledby="w-h">
+          <section className="p-hero" aria-labelledby="w-h">
             <h1 id="w-h" ref={head} tabIndex={-1}>About your child</h1>
             <p className="p-muted">This is the list Sprout hides. You can change it any time in the parent area.</p>
             <ProfileForm
@@ -127,7 +130,7 @@ export function Welcome() {
             />
             {isDemo && (
               <p className="p-note" role="note">
-                <Icon name="shield" /> Demo mode: the AI is simulated until Firebase is connected, but the privacy pipeline is real.
+                <Icon name="shield" size={16} /> Demo mode: the AI is simulated until Firebase is connected, but the privacy pipeline is real.
               </p>
             )}
           </section>
