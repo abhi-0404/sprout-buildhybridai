@@ -18,10 +18,12 @@ Before each wake-up's work: read this file, do the first unchecked task, tick it
 - [x] 4. Bugs and coverage: list modules in `app/src` without unit tests, add tests for the most important ones, fix bugs found.
 - [x] 5. Third blind eval set: written blind by a separate agent, measured once (f09fd3f). 18 of 65 details leaked (deterministic layer), urgent 12/16, concern 7/24, 1 false alarm.
 - [x] 5b. Fix the v3 misses by category (fuzzy profile names, unlisted names after relation words, flat/pincode/roll no/route, handles, running away, threats, bullying, Hinglish). Reviewer pass required (safety code). Then update the claims in README and SUBMISSION honestly.
-- [ ] 6. Submission prep: refresh README, docs/SUBMISSION.md and docs/DEMO_SCRIPT.md with the live URL, the new UI and current numbers.
+- [x] 6. Submission prep: refresh README, docs/SUBMISSION.md and docs/DEMO_SCRIPT.md with the live URL, the new UI and current numbers.
 - [ ] 7. Final: update docs/HANDOFF.md with the night's work, final screenshots, morning summary below.
 
 ## Needs you
+- Record the demo video (docs/DEMO_SCRIPT.md) and paste its YouTube link into docs/SUBMISSION.md.
+- Pick the Devpost platforms: Web is live; Android (debug APK) and iOS (simulator build) only build in CI so far.
 - Dev tool upgrade (Vite 6.4.4+, Vitest 4.1.12+): a dependency change, so it waits for your OK.
 
 ## Log
@@ -30,3 +32,4 @@ Before each wake-up's work: read this file, do the first unchecked task, tick it
 - 01:42 Task 3 done: 44 screenshots (360px + 1366px, light + dark, all tabs), no sideways scroll. Fixed parent header wrapping on phones, replaced developer copy in Family sync. 76/76, 53/53.
 - 01:44 Task 4 done: 24 new unit tests (ledger, JSON parsers, big-brain view helpers, Remote Config merge). 100/100 unit, tsc clean. No bugs found in those modules. Pushed, no deploy needed (tests only).
 - 02:03 Task 5b done: v3 misses fixed by category; Opus review found 3 must-fix (jk filter, game filter, false urgent) + address-order leak + over-redaction, all fixed with regression tests. All 4 sets: 0 leaks, all distress caught, 0 false alarms (optimistic, labelled). 139/139 unit, 53/53 e2e. README, SUBMISSION, WINNING-PLAN claims updated honestly.
+- 02:03 Task 6 done: live link, GitHub link, test counts and honest eval claims in README/SUBMISSION/DEMO_SCRIPT; root README fixed (no long dashes, pnpm); checklist verified (public repo, Apache-2.0, AI Logic import, no secrets).

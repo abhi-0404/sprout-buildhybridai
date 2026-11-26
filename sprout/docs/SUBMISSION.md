@@ -63,9 +63,9 @@ The best use of a small on-device model is not as a weaker copy of the cloud mod
 firebase-ai-logic, gemini-nano, gemini, firebase-app-check, firestore, firebase-auth, remote-config, firebase-hosting, react, typescript, vite, capacitor
 
 ## Text-description checklist (Stage 1)
-- [ ] Says how Firebase AI Logic is used (above).
-- [ ] Summarises features and value proposition (above).
-- [ ] The repo is public with Apache-2.0 shown in About.
-- [ ] Firebase AI Logic is imported and called at runtime (`app/src/ai/firebaseWeb.ts`).
+- [x] Says how Firebase AI Logic is used (above).
+- [x] Summarises features and value proposition (above).
+- [x] The repo is public with Apache-2.0 shown in About (verified Nov 28 via the GitHub license API).
+- [x] Firebase AI Logic is imported and called at runtime (`app/src/ai/firebaseWeb.ts`).
 - [ ] The video is public on YouTube, 3:00 or shorter, in English.
-- [ ] No keys or debug tokens are committed.
+- [x] No keys or debug tokens are committed (scanned Nov 28: no API keys, private keys, debug tokens or Firebase config files tracked).
