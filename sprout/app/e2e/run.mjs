@@ -185,7 +185,7 @@ try {
   check('parent: zero private details sent to the cloud', /\b0\s*\n?\s*private details sent to the cloud/i.test(ov));
   allAxe.overview = await axe('parent overview');
   await shot('parent-overview');
-  for (const [tab, expect] of [['Alerts', /Bullying/], ['Activity', /hidden|Show questions/i], ['Weekly', /Write this week/i], ['Settings', /Simulate on-device model/i], ['Family', /Connect Firebase|Sign in/i]]) {
+  for (const [tab, expect] of [['Alerts', /Bullying/], ['Activity', /hidden|Show questions/i], ['Weekly', /Write this week/i], ['Settings', /Simulate on-device model/i], ['Family', /alerts on your own phone|Sign in/i]]) {
     check(`parent: ${tab} tab opens`, await click(tab) && await waitFor(`${expect}.test(document.body.innerText)`, 4000));
     allAxe[tab] = await axe(`parent ${tab}`);
   }

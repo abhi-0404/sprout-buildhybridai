@@ -12,12 +12,12 @@ function NotConnected() {
   return (
     <section className="p-sec p-empty">
       <Icon name="phone" size={28} />
-      <h2>Connect Firebase to sync alerts to your phone</h2>
+      <h2>Get safety alerts on your own phone</h2>
       <p className="p-muted">
-        With Firebase connected, a safety alert reaches your own phone within seconds, even if you are not holding your child's device.
+        In the connected app, a safety alert reaches your own phone within seconds, even if you are not holding your child's device.
         Alerts carry only the type, level and time. Never the message.
       </p>
-      <p className="p-muted p-small">Copy <code>.env.example</code> to <code>.env.local</code> and add your Firebase keys. Until then, alerts stay on this device.</p>
+      <p className="p-muted p-small">This demo runs without an account, so alerts stay on this device. Try it in the live app at buildhybridai-c1694.web.app.</p>
     </section>
   );
 }

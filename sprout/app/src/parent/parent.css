@@ -245,9 +245,12 @@
 /* ---------- Dashboard shell ---------- */
 .p-shell { display: flex; flex-direction: column; min-height: 100vh; }
 .p-top {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: flex; flex-wrap: nowrap; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px 16px; background: var(--bg); border-bottom: 1px solid var(--line);
 }
+.p-top .p-brand { min-width: 0; }
+.p-top .p-brand > span { min-width: 0; }
+.p-top .p-btn { flex: none; }
 .p-top .p-brand small { display: block; font-weight: 400; font-size: var(--t-xs); color: var(--muted); line-height: 1.2; }
 .p-tabs {
   display: flex; gap: 4px; padding: 0 12px; overflow-x: auto; background: var(--bg);
