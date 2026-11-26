@@ -1,6 +1,6 @@
 # Sprout: handoff
 
-Last updated: 2026-11-26 evening IST, after the live Firebase cloud check (tsc + build OK, 74/74 unit tests, e2e 53/53). Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+Last updated: 2026-11-26 night IST, after the Hosting deploy (build OK, 76/76 unit tests, e2e 53/53 earlier today). Target submission: Nov 30, 10 PM IST.
 
 ## Firebase setup (2026-11-26, live cloud verified, read this first)
 - **Project:** `buildhybridai-c1694` ("BuildHybridAI", Spark plan, user's personal Google account). Linked in `firebase/.firebaserc`. Firebase CLI: `pnpm firebase <cmd>` from `app/` (firebase-tools 15.37.0, logged in as the user).
@@ -12,7 +12,10 @@ Last updated: 2026-11-26 evening IST, after the live Firebase cloud check (tsc +
 - **e2e now builds itself in demo mode into `dist-e2e/`** (blanks the Firebase keys), so `pnpm e2e` passes with a filled `.env.local` and never overwrites `dist/` (which Capacitor and Hosting ship). It also refuses to run if port 4174 is taken and now kills its preview server tree: an orphaned `vite preview` from an earlier run had been answering e2e on 4174 and serving whatever was in `dist/`.
 - **Known gap (pre-existing):** Remote Config `cloud_model` is fetched but no client uses it (web `new FirebaseWebAi()` takes the env/default, Android hardcodes, iOS gets no `cloudModel` from JS). Do not claim runtime model switching in the pitch until it is wired.
 - **Watch out:** free-tier rate limits (429) are real; the first live attempt hit one and the retry 20 s later worked. On-device first keeps cloud use low; for the demo, avoid rapid-fire cloud questions. Remote Config template is not published to the project yet (app uses its defaults).
-- **Next:** Hosting deploy (`pnpm hosting`) only with user OK; Android `google-services.json` + Play Integrity, iOS plist; delete empty GCP project `sprout-hybrid-0553` only if the user asks.
+- **Hosting live (2026-11-26 night):** https://buildhybridai-c1694.web.app (index and SPA routes return 200). Redeploy with `pnpm hosting` from `app/`: it builds, copies `dist/` to `firebase/public/` (git-ignored; Firebase refuses a public dir outside `firebase/`) and deploys.
+- **Security fix before deploy:** `lib/firebase.ts` used `const env = import.meta.env`, which made Vite inline every VITE_ variable, so the fixed App Check debug token was in the production bundle. Now each variable is read directly and the token only in a DEV branch; verified the token is absent from `dist/` and the deployed files. Never read the whole `import.meta.env` object.
+- **Not yet verified:** a cloud answer on the live domain (reCAPTCHA Enterprise path, not the debug token). Check in a real browser: ask a question that falls back to cloud and confirm it answers.
+- **Next:** live-domain cloud check above; Android `google-services.json` + Play Integrity, iOS plist (user does these in the consoles); delete empty GCP project `sprout-hybrid-0553` only if the user asks.
 
 ## Nov 27 session: zero-install builds and the $0 iOS path (read this first)
 - **Firebase Studio is closed to new users** (sign-ups disabled 2026-06-22, shutdown 2027-03-22). The zero-install loop is now: push to GitHub, free Actions runners build, view in the browser. See `research/overnight/android-cloud-dev.md`.

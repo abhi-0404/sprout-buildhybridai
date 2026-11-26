@@ -13,3 +13,5 @@ app/ios/DerivedData/
 app/e2e/screenshots/
 app/android/app/google-services.json
 app/ios/App/App/GoogleService-Info.plist
+# Hosting copy of app/dist, made by pnpm hosting
+firebase/public/
