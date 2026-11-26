@@ -2,6 +2,16 @@
 
 Last updated: 2026-11-26 night IST, after the Hosting deploy (build OK, 76/76 unit tests, e2e 53/53 earlier today). Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
 
+## "Seed packet" UI redesign (2026-11-26 night)
+- **Why:** the user found the live UI bland (system font, flat grey-green panels after the minimalist pass). Chosen direction (user picked it): "seed packet", a garden notebook for curious kids.
+- **Tokens** (`app/src/styles.css`): meadow paper #f0f6e8, forest ink #173a29, leaf #1f7f45, sunflower #ffc83d (send, stars, guardian stamp), sky #2a6fb8 (cloud), honey (care). Dark = night garden #0e2218, not grey-black. Sticker look = `--sticker-edge` (2px ink) + `--lift` (hard offset drop), used only on things a child taps, the privacy hero and primary buttons. Care/distress cards stay soft with no drop on purpose.
+- **Fonts** (user approved, bundled so they work offline in the native apps): `@fontsource-variable/bricolage-grotesque` for headings and big numbers, `@fontsource/atkinson-hyperlegible-next` (latin 400/600/700) for body. Imported in `main.tsx`.
+- **Welcome step 1** (`parent/Welcome.tsx`): the old sideways SVG is replaced by `Journey`, a vertical three-sticker story: the child's sentence with name and school highlighted, the guardian stamp, then the exact cloud text with the real tokens `[CHILD]` and `[SCHOOL_1]`. One reveal animation on load, skipped with reduced motion. Side by side with the headline from 900px. "Try a sample family" is now the primary button (fastest path for judges).
+- **Kid side:** topic cards are seed packets (coloured top with icon, question below, slight tilt), sticker answer bubbles, plant-tag source badges, sunflower send button, Today's wonder on a sun card.
+- **Parent side:** same type, calm hairlines; privacy hero is the one sticker with a big display number; desktop sidebar active tab is a leaf pill; gate lock is a sun stamp.
+- Class names unchanged, so e2e assertions still hold. Screenshots helper used during design lived in the session scratchpad (not in the repo); `pnpm e2e` still writes `app/e2e/screenshots/`.
+- **Verified:** `tsc -b` clean, unit 76/76, e2e 53/53 (axe light + dark, 360/390/1280px no sideways scroll).
+
 ## Firebase setup (2026-11-26, live cloud verified, read this first)
 - **Project:** `buildhybridai-c1694` ("BuildHybridAI", Spark plan, user's personal Google account). Linked in `firebase/.firebaserc`. Firebase CLI: `pnpm firebase <cmd>` from `app/` (firebase-tools 15.37.0, logged in as the user).
 - **Done:** web app "Sprout web" registered; Firestore `(default)` in `asia-south1` (permanent); `firestore.rules` deployed; AI Logic on with the Gemini Developer API (free); Google sign-in on.

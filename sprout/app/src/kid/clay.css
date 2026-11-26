@@ -32,19 +32,19 @@
 
 /* Today's wonder: a quiet card; only the orb is clay. */
 .k-wonder {
-  width: 100%; display: flex; align-items: center; gap: 14px; margin: 0 0 16px; padding: 12px 16px 12px 12px;
-  border: 1px solid var(--line); border-radius: var(--radius-l); background: var(--surface); color: var(--text);
+  width: 100%; display: flex; align-items: center; gap: 14px; margin: 0 0 20px; padding: 12px 16px 12px 12px;
+  border: var(--sticker-edge); border-radius: var(--radius-l); background: var(--sun-soft); color: var(--text); box-shadow: var(--lift);
   font: inherit; text-align: left; cursor: pointer; min-height: 64px;
 }
-.k-wonder:hover { border-color: var(--warm); }
+@media (hover: hover) { .k-wonder:hover { transform: translate(-1px, -1px); box-shadow: 4px 4px 0 var(--drop); } }
 .k-wonder-orb {
   display: grid; place-items: center; flex: none; width: 44px; height: 44px; border-radius: 50%;
   background: radial-gradient(circle at 35% 30%, var(--clay-honey-1), var(--clay-honey-2));
   color: var(--clay-honey-ink);
   box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.7), inset 0 -4px 0 var(--clay-honey-edge);
 }
-.k-wonder-text { display: flex; flex-direction: column; gap: 2px; font-size: var(--k-fs-m); font-weight: 600; line-height: 1.35; }
-.k-wonder-kicker { font-size: var(--k-fs-s); font-weight: 500; color: var(--muted); }
+.k-wonder-text { display: flex; flex-direction: column; gap: 2px; font-family: var(--font-display); font-size: var(--k-fs-l); font-weight: 700; line-height: 1.25; letter-spacing: -.01em; }
+.k-wonder-kicker { font-family: var(--font-body); font-size: var(--k-fs-s); font-weight: 600; color: var(--muted); letter-spacing: 0; }
 
 /* Garden sheet. */
 .k-sheet-backdrop {
@@ -54,22 +54,22 @@
 .k-sheet {
   width: 100%; max-width: 720px; max-height: 88vh; overflow-y: auto;
   padding: 20px 16px calc(24px + env(safe-area-inset-bottom));
-  border-radius: var(--radius-l) var(--radius-l) 0 0; background: var(--surface);
-  border: 1px solid var(--line); border-bottom: 0;
+  border-radius: 28px 28px 0 0; background: var(--surface);
+  border: var(--sticker-edge); border-bottom: 0;
 }
 .k-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.k-sheet-head h2 { margin: 0; font-size: var(--k-fs-xl); line-height: 1.2; font-weight: 700; }
+.k-sheet-head h2 { margin: 0; font-size: var(--k-fs-xl); line-height: 1.1; font-weight: 800; letter-spacing: -.025em; }
 .k-sheet-close {
   display: grid; place-items: center; width: var(--k-hit); height: var(--k-hit); padding: 0; border-radius: 50%;
-  border: 1px solid var(--line); background: var(--surface); color: var(--text); cursor: pointer;
+  border: var(--sticker-edge); background: var(--surface); color: var(--text); cursor: pointer;
 }
-.k-sheet-close:hover { border-color: var(--brand); }
+.k-sheet-close:hover { background: var(--brand-soft); }
 .k-sheet-empty { color: var(--muted); font-size: var(--k-fs-m); text-align: center; padding: 24px 0; }
 .k-sheet-sub { display: flex; justify-content: space-between; align-items: baseline; margin: 24px 0 12px; font-size: var(--k-fs-m); font-weight: 700; }
 .k-sheet-sub span { color: var(--muted); font-weight: 500; font-size: var(--k-fs-s); }
 .k-pots {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; margin-top: 16px;
-  padding: 16px 8px 12px; border-radius: var(--radius-l); background: var(--brand-soft);
+  padding: 16px 8px 12px; border-radius: var(--radius-l); background: var(--brand-soft); border: var(--sticker-edge);
 }
 .k-pot { display: flex; flex-direction: column; align-items: center; text-align: center; }
 .k-pot svg { filter: drop-shadow(0 6px 6px rgba(0, 0, 0, 0.12)); }
@@ -78,12 +78,13 @@
 .k-coins { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
 .k-coin {
   display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 12px; align-items: center;
-  padding: 10px 12px; border-radius: var(--radius-m); background: var(--bg); border: 1px solid var(--line);
+  padding: 10px 12px; border-radius: var(--radius-m); background: var(--bg); border: 2px solid var(--line);
 }
 .k-coin-face {
   grid-row: 1 / 3; display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%;
   color: var(--muted); background: var(--line);
 }
+.k-coin.is-earned { border-color: var(--edge); background: var(--sun-soft); }
 .k-coin.is-earned .k-coin-face {
   color: var(--clay-honey-ink);
   background: radial-gradient(circle at 35% 30%, var(--clay-honey-1), var(--clay-honey-2));
@@ -105,12 +106,12 @@
 .k-celebrate { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 16px; background: var(--k-scrim); }
 .k-celebrate-card {
   position: relative; display: flex; align-items: center; gap: 16px; padding: 18px 24px; border-radius: var(--radius-l);
-  background: var(--surface); color: var(--text); border: 1px solid var(--line);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 8px 0 rgba(0, 0, 0, 0.08), 0 24px 50px -10px rgba(0, 0, 0, 0.35);
+  background: var(--surface); color: var(--text); border: var(--sticker-edge);
+  box-shadow: 6px 6px 0 var(--drop);
   animation: k-pop-in 0.45s cubic-bezier(0.2, 1.4, 0.4, 1);
 }
 .k-celebrate-kicker { margin: 0; font-size: var(--k-fs-s); font-weight: 600; color: var(--k-warm-ink); }
-.k-celebrate-name { display: flex; align-items: center; gap: 8px; margin: 2px 0 0; font-size: var(--k-fs-xl); line-height: 1.2; font-weight: 700; }
+.k-celebrate-name { display: flex; align-items: center; gap: 8px; margin: 2px 0 0; font-family: var(--font-display); font-size: var(--k-fs-xl); line-height: 1.1; font-weight: 800; letter-spacing: -.02em; }
 @keyframes k-pop-in { from { transform: scale(0.6); opacity: 0; } to { transform: none; opacity: 1; } }
 .k-confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
 .k-confetti i { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 3px; animation: k-fall 2.6s ease-in forwards; }

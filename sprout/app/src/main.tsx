@@ -2,6 +2,12 @@ import { StrictMode } from 'react';
 import { Capacitor } from '@capacitor/core';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+// Bundled fonts (work offline in the native apps). Latin subsets only for the body face.
+import '@fontsource-variable/bricolage-grotesque/wght.css';
+import '@fontsource/atkinson-hyperlegible-next/latin-400.css';
+import '@fontsource/atkinson-hyperlegible-next/latin-500.css';
+import '@fontsource/atkinson-hyperlegible-next/latin-600.css';
+import '@fontsource/atkinson-hyperlegible-next/latin-700.css';
 import './styles.css';
 
 createRoot(document.getElementById('root')!).render(

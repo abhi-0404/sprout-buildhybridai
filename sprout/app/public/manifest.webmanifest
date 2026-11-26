@@ -4,8 +4,8 @@
   "description": "A safe, private AI helper for kids 6-12. Their identity never leaves the device.",
   "start_url": "./#/kid",
   "display": "standalone",
-  "background_color": "#f6faf5",
-  "theme_color": "#2f7d4f",
+  "background_color": "#f0f6e8",
+  "theme_color": "#1f7f45",
   "icons": [
     { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
   ]

@@ -1,22 +1,38 @@
 :root {
-  /* Sprout tokens: paper, ink, moss. One accent per screen; cloud = sky, care = honey. */
-  --bg: #fbfcf8; --surface: #ffffff; --text: #18231c; --muted: #5a675e; --line: #e3e8e1;
-  --brand: #2f6b45; --brand-soft: #e8f1ea; --cloud: #3a6fb0; --cloud-soft: #e8eff8;
-  --warm: #8f5a0d; --warm-soft: #fbf1df; --me: #2f6b45; --me-text: #ffffff;
-  --radius-s: 8px; --radius-m: 14px; --radius-l: 22px;
-  --focus: 0 0 0 3px color-mix(in srgb, var(--brand) 35%, transparent);
-  font-family: system-ui, -apple-system, "Segoe UI Variable Text", "Segoe UI", Roboto, sans-serif;
+  /* Sprout "seed packet" tokens: meadow paper, forest ink, leaf green. Sky = the cloud (big brain),
+     honey = care, sunflower = the one playful highlight (send, stars, the guardian's stamp).
+     Stickers: a 2px ink edge plus a hard offset drop, used only on things a child touches or the
+     one hero per screen. Calm areas (parent lists, care cards) use hairlines. */
+  --bg: #f0f6e8; --surface: #ffffff; --text: #173a29; --muted: #4a6656; --line: #d3e3ca;
+  --brand: #1f7f45; --brand-soft: #dcf0da; --cloud: #2a6fb8; --cloud-soft: #ddebfa;
+  --warm: #8a560b; --warm-soft: #ffefcf; --me: #1f7f45; --me-text: #ffffff;
+  --sun: #ffc83d; --sun-soft: #fff3c9; --sun-ink: #3d2a00;
+  --edge: #173a29; --drop: #173a29;
+  --sticker-edge: 2px solid var(--edge);
+  --lift: 3px 3px 0 var(--drop);
+  --lift-hover: 5px 5px 0 var(--drop);
+  --radius-s: 10px; --radius-m: 16px; --radius-l: 24px;
+  --font-display: "Bricolage Grotesque Variable", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible Next", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --focus: 0 0 0 4px color-mix(in srgb, var(--sun) 70%, transparent);
+  font-family: var(--font-body);
   font-size: 16px; line-height: 1.5; color-scheme: light dark;
   -webkit-font-smoothing: antialiased;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #121613; --surface: #181d19; --text: #e7ede8; --muted: #9aa89e; --line: #283029;
-    --brand: #7cc296; --brand-soft: #1c2b21; --cloud: #8fb3e6; --cloud-soft: #1a2433;
-    --warm: #e2ad5c; --warm-soft: #2d2517; --me: #2f6b45;
+    /* Night garden: deep green, never grey-black. Edges become mid-green, drops go darker. */
+    --bg: #0e2218; --surface: #15301f; --text: #e8f5e3; --muted: #a3c1ac; --line: #2a4a36;
+    --brand: #74d394; --brand-soft: #1b4a2f; --cloud: #8ec3ff; --cloud-soft: #173552;
+    --warm: #f3b95e; --warm-soft: #3a2b10; --me: #1f7f45;
+    --sun-soft: #3d3310;
+    --edge: #4f8a66; --drop: #04100a;
   }
 }
-:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; box-shadow: var(--focus); }
+:focus-visible { outline: 2px solid var(--edge); outline-offset: 2px; box-shadow: var(--focus); }
+/* Headings get focus from code (so screen readers announce a new step); no ring for that. */
+[tabindex="-1"]:focus { outline: none; box-shadow: none; }
+h1, h2, h3, .display { font-family: var(--font-display); }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); }

@@ -9,32 +9,27 @@ import './parent.css';
 // First run: a 3-step onboarding for the parent (the buyer). The last step collects the
 // identifiers Sprout must hide, then hands the device to the child.
 
-function DeviceVsCloud() {
+/** The promise, shown with the real pipeline's own output: the child's sentence on the device,
+ *  the guardian's swap, and the exact text the cloud receives ([CHILD], [SCHOOL_1] are the real tokens). */
+function Journey() {
   return (
-    <svg className="p-illus" viewBox="0 0 480 230" role="img" aria-label="A question on the child's device has the name and school removed before it goes to the cloud.">
-      {/* device */}
-      <rect x="14" y="52" width="170" height="130" rx="16" fill="var(--surface)" className="stroke" strokeWidth="3" />
-      <text x="99" y="40" textAnchor="middle" fontSize="13" fontWeight="700">Your child's device</text>
-      <rect x="28" y="70" width="142" height="30" rx="15" fill="var(--warm-soft)" />
-      <text x="99" y="90" textAnchor="middle" fontSize="12" style={{ fill: 'var(--warm)' }}>Aarav, Green Park School</text>
-      <rect x="28" y="108" width="142" height="30" rx="15" fill="var(--brand-soft)" />
-      <text x="99" y="128" textAnchor="middle" fontSize="12">why do volcanoes erupt?</text>
-      <text x="99" y="164" textAnchor="middle" fontSize="11" className="muted">guardian runs here</text>
-      {/* airlock */}
-      <path d="M200 120h80" className="stroke" strokeWidth="3" strokeDasharray="6 6" fill="none" />
-      <path d="M272 112l10 8-10 8" className="stroke" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      <g transform="translate(222 84)">
-        <path d="M18 0l18 7v14c0 11-8 17-18 20C8 38 0 32 0 21V7z" fill="var(--brand)" />
-        <path d="M10 21l6 6 12-12" stroke="#fff" strokeWidth="3.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-      </g>
-      <text x="240" y="152" textAnchor="middle" fontSize="11" className="muted">identity removed</text>
-      {/* cloud */}
-      <path d="M330 150a30 30 0 01-3-60 40 40 0 0176-8 34 34 0 0111 68z" fill="var(--cloud-soft)" className="cloudstroke" strokeWidth="3" transform="translate(0 6)" />
-      <rect x="338" y="108" width="128" height="28" rx="14" fill="var(--surface)" />
-      <text x="402" y="127" textAnchor="middle" fontSize="12">why do volcanoes erupt?</text>
-      <text x="402" y="40" textAnchor="middle" fontSize="13" fontWeight="700">The big brain</text>
-      <text x="402" y="184" textAnchor="middle" fontSize="11" className="muted">sees only this</text>
-    </svg>
+    <figure className="p-journey" aria-labelledby="j-cap">
+      <figcaption id="j-cap" className="p-sr">
+        On the child's device the question includes their name and school. Sprout's guardian swaps them for tags, so the cloud only receives the question.
+      </figcaption>
+      <div className="j-card j-device" aria-hidden="true">
+        <p className="j-where"><Icon name="phone" size={16} /> Typed on your child's device</p>
+        <p className="j-msg">Hi, I'm <mark className="j-secret">Aarav</mark> from <mark className="j-secret">Green Park School</mark>. Why do volcanoes erupt?</p>
+      </div>
+      <div className="j-gate" aria-hidden="true">
+        <span className="j-stamp" aria-hidden="true"><Icon name="shield" size={22} /></span>
+        <span>The guardian on the device swaps the name and school for tags</span>
+      </div>
+      <div className="j-card j-cloud" aria-hidden="true">
+        <p className="j-where"><Icon name="cloud" size={16} /> All the cloud AI receives</p>
+        <p className="j-msg">Hi, I'm <span className="j-token">[CHILD]</span> from <span className="j-token">[SCHOOL_1]</span>. Why do volcanoes erupt?</p>
+      </div>
+    </figure>
   );
 }
 
@@ -76,7 +71,7 @@ export function Welcome() {
 
   return (
     <main className="p-root p-welcome">
-      <div className="p-welcome-inner">
+      <div className={`p-welcome-inner${step === 0 ? ' wide' : ''}`}>
         <div className="p-spread">
           <div className="p-brand"><Logo /> Sprout</div>
           <span className="p-muted p-small">Step {step + 1} of 3</span>
@@ -86,16 +81,18 @@ export function Welcome() {
         </ol>
 
         {step === 0 && (
-          <section className="p-hero" aria-labelledby="w-h">
-            <h1 id="w-h" ref={head} tabIndex={-1}>An AI your child can use. Their identity never leaves this device.</h1>
-            <p className="p-lead">Sprout lets your 6 to 12 year old ask big questions, with a guardian on the device that hides who they are before anything goes online.</p>
-            <DeviceVsCloud />
-            <div className="p-nav-row">
-              <button type="button" className="p-btn" disabled={sampling} onClick={trySample}>
-                {sampling ? 'Loading sample…' : 'Try a sample family'}
-              </button>
-              <button type="button" className="p-btn primary" onClick={() => setStep(1)}>See how it works</button>
+          <section className="p-hero p-hero-split" aria-labelledby="w-h">
+            <div className="p-hero-copy">
+              <h1 id="w-h" ref={head} tabIndex={-1}>An AI your child can use. Their identity never leaves this device.</h1>
+              <p className="p-lead">Sprout lets your 6 to 12 year old ask big questions, with a guardian on the device that hides who they are before anything goes online.</p>
+              <div className="p-cta-row">
+                <button type="button" className="p-btn primary" disabled={sampling} onClick={trySample}>
+                  {sampling ? 'Loading sample…' : 'Try a sample family'}
+                </button>
+                <button type="button" className="p-btn" onClick={() => setStep(1)}>See how it works</button>
+              </div>
             </div>
+            <Journey />
           </section>
         )}
 
