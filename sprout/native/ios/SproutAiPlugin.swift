@@ -183,7 +183,7 @@ public class SproutAiPlugin: CAPPlugin, CAPBridgedPlugin {
             throw NSError(domain: "SproutAi", code: 2, userInfo: [NSLocalizedDescriptionKey: "Firebase is not configured (call FirebaseApp.configure() in AppDelegate)"])
         }
         // FirebaseAI.firebaseAI(backend:) returns the shared instance for the default app and backend.
-        let ai =FirebaseAI.firebaseAI(backend: .googleAI())
+        let ai = FirebaseAI.firebaseAI(backend: .googleAI())
         let system = FirebaseAI.SystemLanguageModel.default
         let gemini = ai.geminiModel(name: cloudModel)
         // VERIFY on CI: exact overloads of generativeModelSession(model:) for a single (non-hybrid) model.
