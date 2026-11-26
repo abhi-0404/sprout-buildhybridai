@@ -6,8 +6,8 @@ Paste each section into the Devpost form. Fill the `[ ]` placeholders before sub
 **Tagline:** The AI you can hand your kid: a small on-device AI guards a big cloud AI, so a child's identity never leaves the tablet.
 **Platforms (select):** Web (Chrome) [+ Android] [+ iOS], only the ones that are actually built.
 **Links:**
-- Demo: [hosted URL]
-- Code: [GitHub URL]
+- Demo: https://buildhybridai-c1694.web.app
+- Code: https://github.com/abhi-0404/sprout-buildhybridai
 - Video: [YouTube URL]
 
 ## Inspiration
@@ -47,7 +47,7 @@ Sprout is an AI helper for 6 to 12 year olds. Its core idea flips "hybrid infere
 
 ## Accomplishments we're proud of
 - **0 private details reached the cloud across 473 synthetic test questions,** in a worst case that forces every question to the cloud with no help from the model. The test sets include ones written blind by separate authors. Results are in `docs/EVAL.md` and the first blind measurements in `docs/EVAL-HISTORY.md`.
-- **Testing:** 66 unit tests and 53 end-to-end browser checks, including accessibility (axe) in light and dark mode.
+- **Testing:** 100 unit tests and 53 end-to-end browser checks, including accessibility (axe) in light and dark mode.
 - **An independent code review** found 3 serious fail-open bugs, and all are fixed with regression tests.
 
 ## What we learned

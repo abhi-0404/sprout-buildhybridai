@@ -4,6 +4,8 @@ A Gemini-powered assistant that a parent can safely give to a 6-12 year old. A s
 
 Built for Google #BuildHybridAI 2026 with **Firebase AI Logic hybrid inference** (Gemini Nano or Apple's on-device model, plus Gemini in the cloud).
 
+**Try it live:** https://buildhybridai-c1694.web.app (tap "Try a sample family" to see the kid and parent views without an account).
+
 ## The problem
 Kids already use general-purpose AI, and the safeguards are not keeping up.
 
@@ -108,7 +110,7 @@ From `app/`:
 
 ```
 pnpm exec tsc --noEmit -p .   # type check
-pnpm test                     # 60 unit tests: redaction, distress, pipeline fail-closed paths, PIN, ledger, digest privacy
+pnpm test                     # 100 unit tests: redaction, distress, pipeline fail-closed paths, PIN, ledger, model JSON parsing, remote policy
 pnpm eval                     # privacy and safety eval over 473 synthetic questions; rewrites docs/EVAL.md
 pnpm e2e                      # 53 end-to-end checks in headless Chrome (needs Chrome installed)
 ```

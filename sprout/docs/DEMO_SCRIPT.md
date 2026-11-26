@@ -4,7 +4,7 @@ Judges may score from this video alone. **Hard limit: 3:00** (anything after is 
 
 ## Before recording (10 minutes)
 1. **App state:**
-   - Run `pnpm build && pnpm preview` in `sprout/app` (or use the hosted URL once deployed).
+   - Run `pnpm build && pnpm preview` in `sprout/app` (or use the hosted app at https://buildhybridai-c1694.web.app).
    - Open Chrome in a clean profile. Zoom to 110% so text reads well on video.
    - If Firebase is connected and Gemini Nano is available, the demo uses real AI. Otherwise it runs in Demo mode, and the video must say so honestly.
 2. **Window:** 1920x1080. Use Chrome device mode set to "iPad Air" for the kid screens: it looks like a child's tablet.
