@@ -1,6 +1,6 @@
 # Sprout: handoff
 
-Last updated: 2026-11-26 night IST, after the Hosting deploy (build OK, 76/76 unit tests, e2e 53/53 earlier today). Target submission: Nov 30, 10 PM IST.
+Last updated: 2026-11-26 night IST, after the Hosting deploy (build OK, 76/76 unit tests, e2e 53/53 earlier today). Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
 
 ## Firebase setup (2026-11-26, live cloud verified, read this first)
 - **Project:** `buildhybridai-c1694` ("BuildHybridAI", Spark plan, user's personal Google account). Linked in `firebase/.firebaserc`. Firebase CLI: `pnpm firebase <cmd>` from `app/` (firebase-tools 15.37.0, logged in as the user).
