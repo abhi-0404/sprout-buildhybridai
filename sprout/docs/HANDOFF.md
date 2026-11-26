@@ -8,7 +8,14 @@ Last updated: 2026-11-27 early morning IST, after the overnight multi-agent run 
 - **`ios-build` workflow extended**: zipped simulator app (Appetize format), optional Appetize upload (secret `APPETIZE_API_TOKEN`, then `APPETIZE_PUBLIC_KEY`), and an unsigned IPA for Sideloadly. See `research/overnight/ios-free-path.md`.
 - **$99 is optional**: Appetize free (30 min/month, public link) + Sideloadly with a free Apple ID on a borrowed iPhone (7 days) + video. Only TestFlight/App Store links need $99.
 - **History cleaned locally**: all mentions of the coding assistant removed from every commit, the local agents folder untracked (ignored via `.git/info/exclude`), root LICENSE added, build cache untracked. The old history is kept locally under `refs/original/` (never push it).
-- **Not pushed yet**: the cleaned `main` needs a force-push to the private repo (old pushed commit `b314d5c` still has mentions), or a push to a fresh public repo. Waiting on the user's choice.
+- **Pushed**: `main` is on `abhi-0404/sprout-buildhybridai` and in sync with origin.
+- **Both cloud builds pass.** The iOS build first failed on a Swift syntax error (missing space before `=` in `SproutAiPlugin.swift` `makeSession`), fixed in `0f53f87`. iOS run 45797991446 is green, with artifacts kept until 24 Feb 2027:
+  - `Sprout-simulator-app` (4 MB): zip to upload to Appetize.
+  - `Sprout-unsigned-ipa` (1 MB): install with Sideloadly.
+  - TestFlight step skipped: the Apple signing secrets are not set.
+- **Not proven yet**: the Firebase `HybridModel` calls in the Swift plugin compile, but no run has shown they work. That needs the app open and a real request sent.
+- **Next**: (1) upload the simulator zip to Appetize and check the app opens and answers; (2) add the Apple signing secrets so the TestFlight step runs.
+- **Standing permission**: failing Sprout cloud builds may be fixed, pushed and rerun without asking (no force-push; other commits still need a request).
 
 ## Overnight run (Nov 26-27)
 **The master plan is [WINNING-PLAN.md](WINNING-PLAN.md)**: the solution per platform, the architecture diagrams, the phase map Nov 27-30, your checklist, and the Stage 1 checklist.
