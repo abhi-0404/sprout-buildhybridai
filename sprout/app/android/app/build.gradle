@@ -43,7 +43,7 @@ dependencies {
     implementation project(':capacitor-cordova-android-plugins')
 
     // Sprout AI plugin: Firebase AI Logic hybrid inference (cloud Gemini + on-device Gemini Nano).
-    implementation platform('com.google.firebase:firebase-bom:34.6.0')
+    implementation platform('com.google.firebase:firebase-bom:35.2.0')
     implementation 'com.google.firebase:firebase-ai:18.2.0'
     implementation 'com.google.firebase:firebase-ai-ondevice:16.0.0-beta08' // not in the BoM
     implementation 'com.google.firebase:firebase-appcheck-playintegrity'

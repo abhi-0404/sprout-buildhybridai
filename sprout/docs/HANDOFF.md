@@ -15,6 +15,10 @@ Last updated: 2026-11-27 early morning IST, after the overnight multi-agent run 
   - TestFlight step skipped: the Apple signing secrets are not set.
 - **Not proven yet**: the Firebase `HybridModel` calls in the Swift plugin compile, but no run has shown they work. That needs the app open and a real request sent.
 - **Next**: (1) upload the simulator zip to Appetize and check the app opens and answers; (2) add the Apple signing secrets so the TestFlight step runs.
+- **Approved downloads done** (Android debug APK builds and release Java compiles locally):
+  - Android App Check wired: `AppCheckSetup.install` runs in `MainActivity` before the plugin. Debug builds use the debug provider (`app/android/app/src/debug/`), release builds use Play Integrity (`src/release/`). It skips itself when there is no `google-services.json`, so Demo mode is unchanged. Register the debug token from Logcat in Firebase console > App Check.
+  - Firebase BoM 34.6.0 to 35.2.0.
+  - `firebase-tools@15.37.0` via `pnpm dlx` (not a dependency, so CI installs stay small): `pnpm firebase <cmd>` and `pnpm hosting` (build + Hosting deploy) in `app/`. Run `pnpm firebase login` first.
 - **Standing permission**: failing Sprout cloud builds may be fixed, pushed and rerun without asking (no force-push; other commits still need a request).
 
 ## Overnight run (Nov 26-27)
