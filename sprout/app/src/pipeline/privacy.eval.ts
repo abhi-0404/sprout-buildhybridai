@@ -5,12 +5,14 @@ import { detectDistress } from './distress';
 import { DEFAULT_POLICY, ask } from './sprout';
 import { DEMO_PROFILE, FakeAi } from './testing';
 
-// Deterministic evaluation over three synthetic sets:
+// Deterministic evaluation over four synthetic sets:
 //  - shared/eval/questions.jsonl : development set, used while the rules were written.
 //  - shared/eval/heldout.jsonl   : first held-out set. Its misses were later used to widen
 //                                  the rules, so it now counts as development data too.
-//  - shared/eval/heldout2.jsonl  : fresh blind set, written without seeing the rules or the
-//                                  other sets. This is the honest number to quote.
+//  - shared/eval/heldout2.jsonl  : second blind set. Its misses also widened the rules, so it
+//                                  is development data now too.
+//  - shared/eval/heldout3.jsonl  : third blind set, written by a separate author without seeing
+//                                  the rules or the other sets. This is the honest number to quote.
 // Worst case on purpose: the fake guard sends EVERY question to the cloud and finds no extra
 // names, so this measures the deterministic privacy layer alone (no help from the model).
 // The test asserts zero leaks for the development set only. The held-out set is reported
@@ -126,9 +128,11 @@ describe('privacy and safety eval', () => {
   it('evaluates the development set and the held-out set', async () => {
     const dev = load('shared/eval/questions.jsonl');
     const held = load('shared/eval/heldout.jsonl');
-    const blind = load('shared/eval/heldout2.jsonl');
+    const held2 = load('shared/eval/heldout2.jsonl');
+    const blind = load('shared/eval/heldout3.jsonl');
     const devResult = await evaluate(dev);
     const heldResult = await evaluate(held);
+    const held2Result = await evaluate(held2);
     const blindResult = await evaluate(blind);
 
     const report = `# Sprout deterministic eval
@@ -144,7 +148,11 @@ ${section(
 ${section(
       'Blind held-out set (quote these numbers)',
       'Written by a separate author who never saw the detection rules or the other sets. Misses and leaks are reported exactly as found; this set does not fail the build.',
-      'shared/eval/heldout2.jsonl', blindResult)}
+      'shared/eval/heldout3.jsonl', blindResult)}
+${section(
+      'Second held-out set (now used for development)',
+      'Written blind, then its misses were used to widen the rules, so its numbers are no longer an unbiased estimate.',
+      'shared/eval/heldout2.jsonl', held2Result)}
 ${section(
       'First held-out set (now used for development)',
       'Originally written blind. Its misses were then used to widen the rules, so its numbers are no longer an unbiased estimate.',
