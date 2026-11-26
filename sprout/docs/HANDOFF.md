@@ -2,7 +2,15 @@
 
 Last updated: 2026-11-27 early morning IST, after the overnight multi-agent run (tsc clean, 73/73 unit tests, e2e 53/53, build OK). Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
 
-## Overnight run (Nov 26-27): read this first
+## Nov 27 session: zero-install builds and the $0 iOS path (read this first)
+- **Firebase Studio is closed to new users** (sign-ups disabled 2026-06-22, shutdown 2027-03-22). The zero-install loop is now: push to GitHub, free Actions runners build, view in the browser. See `research/overnight/android-cloud-dev.md`.
+- **New `android-build` workflow**: debug APK as a run artifact, and attached to a GitHub Release on a `v*` tag. Demo mode unless the `GOOGLE_SERVICES_JSON_BASE64` and `VITE_FIREBASE_*` secrets are set.
+- **`ios-build` workflow extended**: zipped simulator app (Appetize format), optional Appetize upload (secret `APPETIZE_API_TOKEN`, then `APPETIZE_PUBLIC_KEY`), and an unsigned IPA for Sideloadly. See `research/overnight/ios-free-path.md`.
+- **$99 is optional**: Appetize free (30 min/month, public link) + Sideloadly with a free Apple ID on a borrowed iPhone (7 days) + video. Only TestFlight/App Store links need $99.
+- **History cleaned locally**: all mentions of the coding assistant removed from every commit, the local agents folder untracked (ignored via `.git/info/exclude`), root LICENSE added, build cache untracked. The old history is kept locally under `refs/original/` (never push it).
+- **Not pushed yet**: the cleaned `main` needs a force-push to the private repo (old pushed commit `b314d5c` still has mentions), or a push to a fresh public repo. Waiting on the user's choice.
+
+## Overnight run (Nov 26-27)
 **The master plan is [WINNING-PLAN.md](WINNING-PLAN.md)**: the solution per platform, the architecture diagrams, the phase map Nov 27-30, your checklist, and the Stage 1 checklist.
 
 - **Agents**: chrome-expert, android-expert, ios-expert, competitor-scout, hackathon-winner, architect, reviewer. Reports are in `research/overnight/`, and the strategy is in `research/overnight/judge-verdict.md`.
