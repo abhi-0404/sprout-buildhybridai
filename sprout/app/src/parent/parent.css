@@ -95,7 +95,7 @@
 .p-brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 750; font-size: var(--t-lg); letter-spacing: -.01em; }
 .p-brand svg { width: 32px; height: 32px; }
 .p-steps { display: flex; gap: 6px; margin: 0 0 8px; padding: 0; list-style: none; }
-.p-steps li { flex: 1; height: 6px; border-radius: 3px; background: var(--line); }
+.p-steps li { flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--text) 30%, var(--bg)); }
 .p-steps li.done { background: var(--brand); }
 .p-hero { display: flex; flex-direction: column; gap: 20px; }
 .p-hero h1 { font-size: var(--t-xl); line-height: 1.1; }
