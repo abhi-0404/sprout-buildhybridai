@@ -11,6 +11,7 @@ import { dailyWonder, loadGame, newBadges, progress, type Badge } from './game';
 import { KidHeader } from './KidHeader';
 import { Mascot } from './Mascot';
 import { useReadAloud } from './speech';
+import { play, preloadSounds } from './sounds';
 import { suggestionsFor } from './suggestions';
 import { Thinking } from './Thinking';
 import { TurnView, type TurnCtx } from './TurnView';
@@ -48,6 +49,7 @@ export function KidApp() {
     window.setTimeout(() => setAnnounce(msg), 60);
   };
   const speech = useReadAloud();
+  useEffect(() => { preloadSounds(); play('open'); }, []);
   const endRef = useRef<HTMLDivElement>(null);
 
   const deps: Deps = { ai, profile, policy, isOnline: () => navigator.onLine, deviceReady };
@@ -72,6 +74,7 @@ export function KidApp() {
         if (t.answerWhere === 'device' && !done.queued) setPrevious((p) => ({ ...p, [t.id]: t.answer }));
         setTurns((prev) => prev.map((p) => (p.id === t.id ? done : p)));
         if (!done.queued) {
+          play('answer');
           setFreshId(t.id);
           say(`The big brain added more. ${done.answer}`);
         }
@@ -114,11 +117,15 @@ export function KidApp() {
     setText('');
     setFailedQuestion(null);
     setPending(q);
+    play('send');
     try {
       const turn = await ask(q, depsRef.current);
       setTurns((prev) => [...prev, turn]);
+      // Care messages get the softest, calmest sound; everything else a friendly chime.
+      play(turn.route === 'distress' ? 'care' : 'answer');
       say(turn.answer);
     } catch {
+      play('care');
       setFailedQuestion(q);
     } finally {
       setPending(null);
@@ -133,6 +140,9 @@ export function KidApp() {
     freshId,
     lastId: turns[turns.length - 1]?.id,
     speakingId: speech.speakingId,
+    loadingSpeechId: speech.loadingId,
+    loadingSpeechPercent: speech.loadingPercent,
+    onPrepareSpeech: speech.prepare,
     canSpeak: speech.supported,
     onSpeak: speech.toggle,
     onAsk: (q) => void send(q),
@@ -141,7 +151,15 @@ export function KidApp() {
   const empty = turns.length === 0 && !busy && !failedQuestion;
 
   return (
-    <div className="k-shell">
+    // A tiny click for every button (the send and sound buttons have their own sounds).
+    <div
+      className="k-shell"
+      onClickCapture={(e) => {
+        const b = (e.target as HTMLElement).closest('button');
+        // getAttribute: a button with no type attribute is still a plain button here, not the send button.
+        if (b && b.getAttribute('type') !== 'submit' && !b.hasAttribute('data-no-tap')) play('tap');
+      }}
+    >
       <div className="k-app">
         <KidHeader
           name={firstName(profile.childName)}

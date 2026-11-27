@@ -358,3 +358,16 @@
   .k-greet-row { flex-wrap: nowrap; }
 }
 .k-card .k-card-icon svg { width: 32px; height: 32px; }
+
+/* Sounds on / off */
+.k-shell .k-sound-btn {
+  flex: none; display: grid; place-items: center; width: var(--k-hit); height: var(--k-hit); padding: 0;
+  border-radius: 999px; cursor: pointer; border: 2px solid var(--edge); background: var(--surface); color: var(--muted);
+}
+.k-shell .k-sound-btn[aria-pressed="true"] { color: var(--text); }
+/* Small phones: a slightly smaller mascot and sound button keep the child's name in full. */
+@media (max-width: 480px) {
+  .k-app .k-header > .k-mascot { width: 44px; height: 44px; }
+  .k-shell .k-sound-btn { width: 38px; height: 38px; border-width: 0; }
+  .k-app .k-header { gap: 8px; }
+}

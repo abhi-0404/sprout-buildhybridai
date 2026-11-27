@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { neuralVoice, neuralVoiceCached, neuralVoiceSupported } from './neuralVoice';
 
 // Local-only speech helpers. Privacy promise: no audio ever goes to a cloud speech service.
 // Voice input is offered ONLY when the browser can recognise speech on the device itself,
-// and read-aloud only ever uses a voice installed on the device.
+// and read-aloud only ever uses a voice that runs on the device: the Kokoro neural voice (model
+// downloaded once, speech made locally), or a voice installed on the device.
 
 // These web APIs are not in the TypeScript DOM lib, so they are described here.
 interface RecognitionResultList {
@@ -101,8 +103,14 @@ export function useLocalVoiceInput(onText: (text: string) => void) {
 
 export function useReadAloud() {
   const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
-  const [supported, setSupported] = useState(Boolean(synth));
+  const [neuralOk] = useState(neuralVoiceSupported);
+  // False until the voice list shows an installed (on-device) voice: before that, the browser's
+  // default could be a network voice, and the answer contains the child's name.
+  const [systemOk, setSystemOk] = useState(false);
+  const [, rerender] = useState(0);
   const [speakingId, setSpeakingId] = useState<string | null>(null);
+  /** The answer whose neural voice is still loading (first use downloads the model). */
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const voice = useRef<SpeechSynthesisVoice | undefined>(undefined);
 
   useEffect(() => {
@@ -112,7 +120,7 @@ export function useReadAloud() {
       if (!all.length) return; // not loaded yet: the default voice is used
       const local = all.filter((v) => v.localService);
       voice.current = local.find((v) => v.lang.toLowerCase().startsWith('en')) ?? local[0];
-      setSupported(local.length > 0); // no on-device voice: hide the button rather than risk a cloud voice
+      setSystemOk(local.length > 0); // no on-device voice: never risk a cloud voice
     };
     pick();
     synth.addEventListener?.('voiceschanged', pick);
@@ -121,24 +129,76 @@ export function useReadAloud() {
       synth.cancel();
     };
   }, [synth]);
+  useEffect(() => {
+    // A device that downloaded the voice before loads it now (from its own cache), so the first
+    // "Read to me" already uses it.
+    // Not in the phone apps: there the model loads only when a child first asks to hear an answer,
+    // to save memory and battery.
+    if (neuralOk && !isNativeApp()) void neuralVoiceCached().then((yes) => { if (yes) neuralVoice().warm(); });
+    const off = neuralVoice().subscribe(() => rerender((n) => n + 1));
+    return () => { off(); neuralVoice().stop(); };
+  }, [neuralOk]);
 
-  const toggle = useCallback((id: string, text: string) => {
-    if (!synth) return;
-    if (speakingId === id) {
-      synth.cancel();
-      setSpeakingId(null);
-      return;
-    }
-    synth.cancel();
+  const clear = useCallback((id: string) => {
+    setSpeakingId((cur) => (cur === id ? null : cur));
+    setLoadingId((cur) => (cur === id ? null : cur));
+  }, []);
+
+  const speakSystem = useCallback((id: string, text: string) => {
+    if (!synth || !systemOk || !voice.current?.localService) { clear(id); return; }
     const u = new SpeechSynthesisUtterance(text);
     if (voice.current) u.voice = voice.current;
     u.rate = 0.95;
-    u.pitch = 1.05;
-    u.onend = () => setSpeakingId((cur) => (cur === id ? null : cur));
-    u.onerror = () => setSpeakingId((cur) => (cur === id ? null : cur));
+    u.pitch = 1.2; // a little brighter and friendlier for children
+    u.onend = () => clear(id);
+    u.onerror = () => clear(id);
     setSpeakingId(id);
     synth.speak(u);
-  }, [synth, speakingId]);
+  }, [synth, systemOk, clear]);
 
-  return { supported, speakingId, toggle };
+  const toggle = useCallback((id: string, text: string) => {
+    const nv = neuralVoice();
+    const wasMine = speakingId === id || loadingId === id;
+    synth?.cancel();
+    nv.stop();
+    setSpeakingId(null);
+    setLoadingId(null);
+    if (wasMine) return;
+    const neural = neuralOk && !nv.broken;
+    // The neural voice is used once it is loaded, or when there is no installed voice to use
+    // meanwhile. On first use with an installed voice, that voice reads right away while the
+    // neural voice downloads in the background for next time.
+    if (neural && (nv.ready || !systemOk)) {
+      // "Warming up my voice" until the first sentence plays (instant when it was prepared).
+      setSpeakingId(id);
+      setLoadingId(id);
+      nv.speak(text, {
+        onStart: () => setLoadingId((cur) => (cur === id ? null : cur)),
+        onEnd: () => clear(id),
+        onError: () => { clear(id); speakSystem(id, text); },
+      });
+      return;
+    }
+    speakSystem(id, text);
+    if (neural) nv.warm();
+  }, [synth, neuralOk, systemOk, speakingId, loadingId, clear, speakSystem]);
+
+  /** Prepares the speech for a new answer in the background (only once the voice is loaded). */
+  const prepare = useCallback((text: string) => { if (neuralOk) neuralVoice().prepare(text); }, [neuralOk]);
+
+  const nv = neuralVoice();
+  return {
+    supported: (neuralOk && !nv.broken) || systemOk,
+    speakingId,
+    loadingId,
+    /** Model download percent while the first "Read to me" waits for it, else undefined. */
+    loadingPercent: loadingId && !nv.ready && nv.progress > 0 && nv.progress < 100 ? nv.progress : undefined,
+    toggle,
+    prepare,
+  };
+}
+
+function isNativeApp(): boolean {
+  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor;
+  return Boolean(cap?.isNativePlatform?.());
 }

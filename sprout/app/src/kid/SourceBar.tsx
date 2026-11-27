@@ -15,13 +15,17 @@ export interface Followups {
   simpler: () => void;
 }
 
-export function SourceBar({ turn, open, panelId, onToggle, canSpeak, speaking, onSpeak, followups }: {
+export function SourceBar({ turn, open, panelId, onToggle, canSpeak, speaking, voiceLoading, voicePercent, onSpeak, followups }: {
   turn: Turn;
   open: boolean;
   panelId: string;
   onToggle: () => void;
   canSpeak: boolean;
   speaking: boolean;
+  /** The neural voice is still getting ready (first use downloads it once). */
+  voiceLoading?: boolean;
+  /** Download percent on the very first use, when known. */
+  voicePercent?: number;
   onSpeak: () => void;
   /** Only on the newest normal answer. */
   followups?: Followups;
@@ -51,7 +55,7 @@ export function SourceBar({ turn, open, panelId, onToggle, canSpeak, speaking, o
           {canSpeak && (
             <button type="button" className="k-act" aria-pressed={speaking} onClick={onSpeak}>
               {speaking ? <Square size={16} strokeWidth={1.75} aria-hidden="true" /> : <Volume2 size={18} strokeWidth={1.75} aria-hidden="true" />}
-              {speaking ? 'Stop' : 'Read to me'}
+              {voiceLoading ? `Warming up my voice…${voicePercent !== undefined ? ` ${voicePercent}%` : ''}` : speaking ? 'Stop' : 'Read to me'}
             </button>
           )}
           {followups && (

@@ -1,5 +1,5 @@
 import { Hourglass, Sparkles } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Turn } from '../pipeline/sprout';
 import type { ChildProfile } from '../pipeline/types';
 import { CareCard } from './CareCard';
@@ -18,6 +18,10 @@ export interface TurnCtx {
   freshId: string | null;
   lastId: string | undefined;
   speakingId: string | null;
+  loadingSpeechId?: string | null;
+  loadingSpeechPercent?: number;
+  /** Prepares the read-aloud audio for an answer in the background. */
+  onPrepareSpeech?: (text: string) => void;
   canSpeak: boolean;
   onSpeak: (id: string, text: string) => void;
   onAsk: (q: string) => void;
@@ -36,6 +40,9 @@ export function TurnView({ turn, ctx }: { turn: Turn; ctx: TurnCtx }) {
   // Follow-up buttons only on the newest normal answer, so the child can keep going without typing.
   const canFollow = turn.id === ctx.lastId && (turn.route === 'device' || turn.route === 'cloud' || turn.route === 'queued');
   const topic = turn.question.replace(/^(Tell me more about|Can you say that more simply\?)\s*:?\s*/i, '');
+  const isLast = turn.id === ctx.lastId;
+  const prepareSpeech = ctx.onPrepareSpeech;
+  useEffect(() => { if (isLast && prepareSpeech) prepareSpeech(shown); }, [isLast, shown, prepareSpeech]);
   const bar = (
     <SourceBar
       turn={turn}
@@ -44,6 +51,8 @@ export function TurnView({ turn, ctx }: { turn: Turn; ctx: TurnCtx }) {
       onToggle={() => setOpen((o) => !o)}
       canSpeak={ctx.canSpeak}
       speaking={ctx.speakingId === turn.id}
+      voiceLoading={ctx.loadingSpeechId === turn.id}
+      voicePercent={ctx.loadingSpeechId === turn.id ? ctx.loadingSpeechPercent : undefined}
       onSpeak={() => ctx.onSpeak(turn.id, shown)}
       followups={canFollow ? {
         more: () => ctx.onAsk(`Tell me more about: ${topic}`),

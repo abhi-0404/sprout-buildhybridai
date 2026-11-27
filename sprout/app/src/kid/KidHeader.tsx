@@ -1,6 +1,7 @@
-import { Flower2, Lock } from 'lucide-react';
+import { Flower2, Lock, Volume2, VolumeX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Mascot } from './Mascot';
+import { play, setSoundsOn, soundsOn } from './sounds';
 
 const HOLD_MS = 1500;
 
@@ -21,6 +22,23 @@ function StatusPill({ deviceReady, online }: { deviceReady: boolean; online: boo
       <span className="k-dot" aria-hidden="true" />
       {label}
     </span>
+  );
+}
+
+/** Sounds on / off, remembered on this device. */
+function SoundButton() {
+  const [on, setOn] = useState(soundsOn);
+  const toggle = () => {
+    const next = !on;
+    setSoundsOn(next);
+    setOn(next);
+    if (next) play('tap');
+  };
+  const Icon = on ? Volume2 : VolumeX;
+  return (
+    <button type="button" className="k-sound-btn" data-no-tap onClick={toggle} aria-pressed={on} aria-label="Sounds" title={on ? 'Sounds on' : 'Sounds off'}>
+      <Icon size={20} strokeWidth={1.75} aria-hidden="true" />
+    </button>
   );
 }
 
@@ -105,6 +123,7 @@ export function KidHeader({ name, thinking, deviceReady, online, onGrownUps, bad
           <StatusPill deviceReady={deviceReady} online={online} />
         </div>
       </div>
+      <SoundButton />
       {badges !== undefined && <GardenButton badges={badges} onOpen={onGarden} />}
       <GrownUpsButton onOpen={onGrownUps} />
     </header>

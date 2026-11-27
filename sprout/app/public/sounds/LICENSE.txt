@@ -1,0 +1,27 @@
+Sound effects in this folder
+============================
+
+Source packs, all by Kenney (www.kenney.nl):
+
+  Music Jingles      https://kenney.nl/assets/music-jingles
+  Interface Sounds   https://kenney.nl/assets/interface-sounds  (v1.0)
+  UI Audio           https://kenney.nl/assets/ui-audio  (distributed as "UI SFX Set")
+
+License: Creative Commons Zero, CC0 1.0 Universal (public domain dedication)
+License URL: https://creativecommons.org/publicdomain/zero/1.0/
+
+Free for personal, educational and commercial use. Credit to Kenney is
+appreciated but not required. The .ogg files are copied unmodified (Ogg Vorbis).
+
+File mapping (project name <- pack / original file):
+
+  open.ogg      <- Music Jingles   / Audio/Pizzicato jingles/jingles_PIZZI15.ogg
+  send.ogg      <- Interface Sounds / Audio/maximize_006.ogg
+  thinking.ogg  <- Interface Sounds / Audio/drop_003.ogg
+  answer.ogg    <- Music Jingles   / Audio/Steel jingles/jingles_STEEL09.ogg
+  coin.ogg      <- Music Jingles   / Audio/Steel jingles/jingles_STEEL07.ogg
+  care.ogg      <- Music Jingles   / Audio/Pizzicato jingles/jingles_PIZZI13.ogg
+  tap.ogg       <- UI Audio        / Audio/rollover5.ogg
+
+Each .wav file is the same sound, decoded from its .ogg and saved as 22.05 kHz mono
+16-bit WAV, for browsers that cannot play Ogg (older iPhones).

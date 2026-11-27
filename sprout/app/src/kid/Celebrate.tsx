@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { BadgeIcon } from './icons';
 import type { Badge } from './game';
 import { Mascot } from './Mascot';
+import { play } from './sounds';
 
 const COLORS = ['#ff9fa8', '#ffd166', '#7aa7f5', '#5fbf84', '#a78bfa', '#fb923c'];
 
 /** A short, joyful moment when a new badge is earned. Confetti is skipped with reduced motion. */
 export function Celebrate({ badge, onDone }: { badge: Badge; onDone: () => void }) {
+  useEffect(() => { play('coin'); }, []);
   useEffect(() => {
     const t = window.setTimeout(onDone, 3600);
     return () => clearTimeout(t);
