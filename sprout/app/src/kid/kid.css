@@ -151,6 +151,7 @@
 .k-badge.tone-script { background: var(--warm-soft); color: var(--k-warm-ink); }
 .k-badge[aria-expanded="true"] { box-shadow: 2px 2px 0 currentColor; }
 .k-badge-lock { display: inline-flex; align-items: center; gap: 6px; padding-left: 10px; border-left: 1px solid currentColor; white-space: nowrap; font-weight: 500; }
+.k-badge-sample { padding-left: 10px; border-left: 1px solid currentColor; white-space: nowrap; font-weight: 500; font-size: 0.85em; }
 .k-badge-caret { opacity: 0.75; }
 .k-actions { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
 .k-act {

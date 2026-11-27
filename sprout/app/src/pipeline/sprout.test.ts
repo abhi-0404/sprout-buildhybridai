@@ -145,3 +145,30 @@ describe('ask', () => {
     expect(t.estAllCloudCostUsd).toBeGreaterThan(t.estCloudCostUsd);
   });
 });
+
+describe('empty model answers never reach the child', () => {
+  const answerOnlyFrom = (where: 'device' | 'cloud', text: string) => (req: { mode: string }) =>
+    (req.mode === 'only_device') === (where === 'device') ? text : `Answer from ${req.mode}.`;
+
+  it('an empty cloud answer falls back to the device answer', async () => {
+    const ai = new FakeAi('available', { answer: answerOnlyFrom('cloud', '   ') });
+    const t = await ask('why do volcanoes explode?', deps(ai));
+    expect(t.answerWhere).toBe('device');
+    expect(t.answer.trim()).not.toBe('');
+  });
+
+  it('an empty device answer is a failed turn (the kid view offers a retry), not an empty bubble', async () => {
+    const ai = new FakeAi('available', { answer: answerOnlyFrom('device', '') });
+    await expect(ask('what is a volcano?', deps(ai))).rejects.toThrow(/empty device answer/);
+  });
+
+  it('an empty simplified answer is blocked, not shown', async () => {
+    const ai = new FakeAi('available', {
+      referee: () => JSON.stringify({ verdict: 'simplify', reason: 'too heavy' }),
+      simplify: () => ' ',
+    });
+    const t = await ask('why do volcanoes explode?', deps(ai));
+    expect(t.referee?.verdict).toBe('block');
+    expect(t.answer.trim()).not.toBe('');
+  });
+});

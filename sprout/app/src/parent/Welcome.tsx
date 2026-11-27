@@ -40,7 +40,7 @@ const HOW: { ico: IconName; cls: string; title: string; text: string }[] = [
 ];
 
 export function Welcome() {
-  const { profile, setProfile, policy, setPolicy, isDemo, ai, deviceReady, setTurns } = useSprout();
+  const { profile, setProfile, policy, setPolicy, isDemo, setTurns } = useSprout();
   const [, navigate] = useRoute();
   const [step, setStep] = useState(0);
   const head = useRef<HTMLHeadingElement>(null);
@@ -52,7 +52,7 @@ export function Welcome() {
     setSampling(true);
     try {
       setTurns([]);
-      await runSample({ ai, policy, deviceReady, onTurn: (t) => setTurns((prev) => [...prev, { ...t, sample: true }]) });
+      await runSample({ policy, onTurn: (t) => setTurns((prev) => [...prev, t]) });
       setPolicy({ ...policy, helplines: DEFAULT_HELPLINES.IN });
       setProfile(SAMPLE_PROFILE);
       navigate('kid');

@@ -83,9 +83,12 @@ export const topicLabel = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 
 /** Route badge for a turn: sprout = on device, cloud = big brain, heart = care message. */
 export function routeBadge(t: Turn): { Icon: LucideIcon; label: string; cls: 'device' | 'cloud' | 'care' } {
-  if (t.answerWhere === 'script') return { Icon: Heart, label: 'Care message', cls: 'care' };
-  if (t.answerWhere === 'cloud') return { Icon: Cloud, label: 'Big brain', cls: 'cloud' };
-  return { Icon: Sprout, label: 'On this device', cls: 'device' };
+  const b: { Icon: LucideIcon; label: string; cls: 'device' | 'cloud' | 'care' } =
+    t.answerWhere === 'script' ? { Icon: Heart, label: 'Care message', cls: 'care' }
+    : t.answerWhere === 'cloud' ? { Icon: Cloud, label: 'Big brain', cls: 'cloud' }
+    : { Icon: Sprout, label: 'On this device', cls: 'device' };
+  // Sample family turns use scripted model replies: say so wherever the route is shown.
+  return t.sample ? { ...b, label: `${b.label} (sample)` } : b;
 }
 
 export const KIND_LABEL: Record<DistressKind, string> = {

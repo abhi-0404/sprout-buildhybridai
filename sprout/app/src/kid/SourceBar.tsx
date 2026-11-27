@@ -42,6 +42,7 @@ export function SourceBar({ turn, open, panelId, onToggle, canSpeak, speaking, o
       >
         <SourceIcon size={18} strokeWidth={1.75} aria-hidden="true" />
         <span>{s.label}</span>
+        {turn.sample && <span className="k-badge-sample">sample, scripted answer</span>}
         {secrets && <span className="k-badge-lock"><Lock size={14} strokeWidth={1.75} aria-hidden="true" /> secrets kept</span>}
         <Caret className="k-badge-caret" size={16} strokeWidth={1.75} aria-hidden="true" />
       </button>

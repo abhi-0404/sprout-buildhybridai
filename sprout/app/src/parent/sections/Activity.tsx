@@ -83,6 +83,7 @@ function Item({ turn, showText, ageBand }: { turn: Turn; showText: boolean; ageB
                     {s.where === 'device' ? 'device' : 'cloud'}
                   </span>
                   <b>{s.task}</b>
+                  {s.model && <span className="p-muted">{s.model}</span>}
                   <span className="p-muted">{s.latencyMs} ms</span>
                 </li>
               ))}

@@ -29,9 +29,16 @@ export function Overview({ go }: { go: (id: string) => void }) {
   const topMax = topics[0]?.[1] ?? 1;
   const leaked = t.identifiersSentToCloud > 0;
   const saved = t.estAllCloudCostUsd > 0 ? Math.round((1 - t.estCloudCostUsd / t.estAllCloudCostUsd) * 100) : 0;
+  const hasSample = turns.some((x) => x.sample);
 
   return (
     <>
+      {hasSample && (
+        <p className="p-note" role="note">
+          <Icon name="note" size={16} />
+          <span>These numbers include the sample family. Its privacy and distress rules really ran on this device, but every AI reply (answers, guard and referee verdicts) was scripted: no AI model was called and nothing was sent to the cloud.</span>
+        </p>
+      )}
       <section className={`p-privacy-hero${leaked ? ' leak' : ''}`} aria-label="Privacy">
         <div className="primary">
           <div className="big" aria-hidden="true">{t.identifiersSentToCloud}</div>

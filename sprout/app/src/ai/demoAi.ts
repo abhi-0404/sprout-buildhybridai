@@ -6,6 +6,8 @@ import type { AiClient, AiRequest, AiResult, DeviceStatus } from './types';
 
 export interface DemoSettings {
   deviceModel: boolean; // simulate a device with/without an on-device model
+  /** Multiplies the simulated wait (default 1). The sample family uses a small value. */
+  latencyScale?: number;
 }
 
 const ANSWERS: [RegExp, string][] = [
@@ -68,7 +70,8 @@ export class DemoAi implements AiClient {
     if (req.mode === 'only_device' && !this.settings.deviceModel) throw new Error('device unavailable');
     const offline = typeof navigator !== 'undefined' && navigator.onLine === false;
     if (req.mode !== 'only_device' && req.mode !== 'prefer_device' && offline) throw new Error('offline');
-    const latencyMs = device ? 180 + Math.round(Math.random() * 220) : 700 + Math.round(Math.random() * 600);
+    const base = device ? 180 + Math.round(Math.random() * 220) : 700 + Math.round(Math.random() * 600);
+    const latencyMs = Math.round(base * (this.settings.latencyScale ?? 1));
     await sleep(latencyMs);
     const where = device ? 'device' : 'cloud';
     const msg = message(req.prompt);

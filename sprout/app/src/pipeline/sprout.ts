@@ -41,6 +41,8 @@ export interface Step {
   /** Exact text that left the device; undefined for on-device steps. */
   sentToCloud?: string;
   outChars: number;
+  /** Cloud model that answered (cloud steps only; may be a fallback model on the free tier). */
+  model?: string;
 }
 
 export type Mode = 'hybrid' | 'cloud-safe' | 'offline';
@@ -140,6 +142,7 @@ async function call(deps: Deps, steps: Step[], req: AiRequest, childText: string
     latencyMs: r.latencyMs,
     sentToCloud: where === 'cloud' ? req.prompt : undefined,
     outChars: r.text.length,
+    ...(where === 'cloud' && r.model ? { model: r.model } : {}),
   });
   return r;
 }
@@ -176,11 +179,15 @@ async function runGuard(deps: Deps, steps: Step[], text: string): Promise<GuardR
 }
 
 async function answerOn(deps: Deps, steps: Step[], where: Where, sanitized: string): Promise<AiResult> {
-  return call(deps, steps, {
+  const r = await call(deps, steps, {
     task: 'answer',
     mode: where === 'device' ? 'only_device' : 'only_cloud',
     prompt: answerPrompt(sanitized, deps.profile.ageBand, where),
   }, sanitized);
+  // An empty answer (for example a model that spent its whole token budget thinking) is a failed
+  // answer: never an empty bubble. Callers treat it like any other failed call.
+  if (!r.text.trim()) throw new Error(`empty ${where} answer`);
+  return r;
 }
 
 /** The on-device model checks the cloud's answer before the child sees it. Fails closed. */
@@ -203,6 +210,7 @@ async function referee(
   if (verdict === 'simplify') {
     try {
       const s = await call(deps, steps, { task: 'simplify', mode, prompt: simplifyPrompt(answer, deps.profile.ageBand) }, '');
+      if (!s.text.trim()) throw new Error('empty simplified answer');
       return { answer: s.text.trim(), referee: { verdict, reason, where, original: answer } };
     } catch {
       return { answer: BLOCKED_ANSWER_REPLY, referee: { verdict: 'block', reason: 'A gentler version could not be made', where } };

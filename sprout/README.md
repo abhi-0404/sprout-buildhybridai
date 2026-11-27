@@ -39,6 +39,8 @@ One platform-neutral interface, [`AiClient`](app/src/ai/types.ts), has one imple
 | iOS | [`native/ios/SproutAiPlugin.swift`](native/ios/SproutAiPlugin.swift), same bridge | `HybridModel(primary: SystemLanguageModel.default, secondary: Gemini)`, source from `rawResponse.modelVersion` (Firebase Apple SDK pinned to 12.x) |
 | Tests and demo | `FakeAi` in [`app/src/pipeline/testing.ts`](app/src/pipeline/testing.ts), [`app/src/ai/demoAi.ts`](app/src/ai/demoAi.ts) | Scripted responses, no keys needed |
 
+**Cloud models on the free tier (web).** The cloud model is `gemini-3.5-flash`. The free Gemini tier allows only 20 requests a day per model for the whole project, so when it is over quota, overloaded or slower than 8 seconds the web client moves to `gemini-3.5-flash-lite` for every cloud task, including the cloud guard and the answer referee, and skips that model for a while (10 minutes after a quota error, 1 minute after an overload). Every cloud step records which model answered, shown in the parent Activity tab. Nothing else changes: the privacy gate still runs before every cloud call and every failure still fails closed. The eval numbers below measure the on-device rules alone, so they do not depend on which cloud model answered. "Try a sample family" runs the real pipeline with scripted model replies (labelled "sample" in the app) so it spends no cloud quota.
+
 The pipeline in [`app/src/pipeline/`](app/src/pipeline/) is pure TypeScript with no Firebase or DOM imports, so the same code runs on web, inside Capacitor, and in unit tests.
 
 ## Privacy guarantee

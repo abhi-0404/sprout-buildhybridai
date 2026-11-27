@@ -21,6 +21,8 @@ export interface AiResult {
   /** Where the request actually ran, read from the SDK (inferenceSource / modelVersion). */
   source: Where;
   latencyMs: number;
+  /** Cloud model that answered (cloud results only), for the parent's Activity ledger. */
+  model?: string;
 }
 
 export type DeviceStatus = 'available' | 'downloadable' | 'downloading' | 'unavailable';
