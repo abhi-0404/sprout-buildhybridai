@@ -229,12 +229,20 @@ function distressTurn(shell: Shell, kind: DistressKind, level: Exclude<DistressL
   };
 }
 
-/** Cloud answer + referee; falls back to the device answer if the cloud call fails. */
-async function bigAnswer(shell: Shell, deps: Deps, steps: Step[]): Promise<Turn> {
+/** A cloud answer started alongside the guard (see ask()): its result and its own step list. */
+interface EarlyAnswer { result: Promise<AiResult>; steps: Step[]; prompt: string }
+
+/** Cloud answer + referee; falls back to the device answer if the cloud call fails. `early` is a
+ *  cloud answer already started on exactly `shell.sanitized`. */
+async function bigAnswer(shell: Shell, deps: Deps, steps: Step[], early?: EarlyAnswer): Promise<Turn> {
   const { sanitized, redactions } = shell;
   let text: string;
   try {
-    text = (await answerOn(deps, steps, 'cloud', sanitized)).text.trim();
+    if (early) {
+      try { text = (await early.result).text.trim(); } finally { steps.push(...early.steps); }
+    } else {
+      text = (await answerOn(deps, steps, 'cloud', sanitized)).text.trim();
+    }
   } catch (e) {
     if (e instanceof LeakError) return { ...shell, route: 'blocked', answerWhere: 'script', answer: BLOCKED_ANSWER_REPLY };
     if (!deps.deviceReady) throw e;
@@ -274,18 +282,39 @@ export async function ask(rawQuestion: string, deps: Deps): Promise<Turn> {
     );
   }
 
+  // Speed-up for cloud-safe mode (no device model): the guard and the answer both run in the cloud
+  // on the same redacted text, so the answer starts at the same time as the guard instead of after
+  // it. It is used only if the guard lets the question through and found no extra names; otherwise
+  // it is thrown away without waiting for it, and recorded as sent (the text did leave the device).
+  let early: EarlyAnswer | undefined;
+  if (!deps.deviceReady && online) {
+    const earlySteps: Step[] = [];
+    early = { result: answerOn(deps, earlySteps, 'cloud', first.text), steps: earlySteps, prompt: answerPrompt(first.text, profile.ageBand, 'cloud') };
+    early.result.catch(() => { /* handled where it is used; never an unhandled rejection */ });
+  }
+  const discardEarly = (): void => {
+    if (early) steps.push({ task: 'answer', where: 'cloud', latencyMs: 0, sentToCloud: early.prompt, outChars: 0 });
+  };
+
   // 3. Guard (on-device when possible). If it should run but fails, fail closed.
   let g: GuardRun;
   try {
     g = await runGuard(deps, steps, first.text);
   } catch {
+    discardEarly();
     return {
       ...base, sanitized: first.text, redactions: first.redactions, mode: baseMode,
+      ...(early ? { cloudSaw: first.text } : {}),
       route: 'blocked', answerWhere: 'script', answer: GUARD_FAILED_REPLY,
     };
   }
   const { text: sanitized, redactions } = redact(question, profile, g.verdict.names);
   const shell: Shell = { ...base, sanitized, redactions, mode: g.mode, guard: g.verdict, cloudSaw: g.cloudSaw };
+  // The early answer is usable only for exactly this text and a verdict that is answered anyway
+  // ('ok' or 'sensitive': the prompt is the same and the referee still checks the answer).
+  const answerable = g.verdict.category === 'ok' || g.verdict.category === 'sensitive';
+  const usable = early && g.ran && sanitized === first.text && answerable ? early : undefined;
+  if (early && !usable) discardEarly();
 
   if (g.verdict.category === 'distress') return distressTurn(shell, 'sad_or_scared', 'concern', deps);
   if (g.verdict.category === 'unsafe') return { ...shell, route: 'blocked', answerWhere: 'script', answer: BLOCKED_REPLY };
@@ -298,7 +327,7 @@ export async function ask(rawQuestion: string, deps: Deps): Promise<Turn> {
 
   const wantsCloud = g.verdict.needsBigBrain || !deps.deviceReady;
   // 5a. Big question and online: cloud answer on sanitized text, refereed.
-  if (wantsCloud && online) return bigAnswer(shell, deps, steps);
+  if (wantsCloud && online) return bigAnswer(shell, deps, steps, usable);
   // 5b. Device answers (simple question, or a quick answer now while a big one waits).
   if (deps.deviceReady) {
     const r = await answerOn(deps, steps, 'device', sanitized);

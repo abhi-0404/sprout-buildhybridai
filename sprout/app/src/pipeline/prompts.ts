@@ -46,7 +46,9 @@ Child's message:
 }
 
 export function answerPrompt(question: string, ageBand: AgeBand, where: 'device' | 'cloud'): string {
-  const length = where === 'device' ? '1 to 3 short sentences' : 'at most 6 short sentences';
+  // Short on purpose: quicker to make, read and check (a long answer made the referee ask for a
+  // rewrite, which cost a whole extra call). "Tell me more" is one tap away.
+  const length = where === 'device' ? '1 to 3 short sentences' : '2 to 4 short sentences';
   const words = ageBand === '6-8' ? 'very simple words a 6 year old knows' : 'clear, simple words';
   return `You are Sprout, a warm, curious helper for ${AGE_TEXT[ageBand]}.
 Answer in ${length}, using ${words}. Be accurate and kind. Use a fun comparison when it helps.
@@ -62,7 +64,8 @@ export function refereePrompt(question: string, answer: string, ageBand: AgeBand
   return `You check answers before they are shown to ${AGE_TEXT[ageBand]}. Return JSON only.
 verdict:
 - "pass": accurate enough, kind, and fine for this age.
-- "simplify": safe, but too long, too complex, too graphic, or too scary for this age.
+- "simplify": safe, but too complex, too graphic, or too scary for this age.
+A short answer (up to 4 sentences) is not too long, and a friendly question back to the child is fine.
 - "block": unsafe, adult, asks for personal info, or encourages risky behaviour.
 reason: one short sentence.
 

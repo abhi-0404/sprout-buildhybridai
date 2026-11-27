@@ -248,3 +248,28 @@ describe('answerThinkingLevel', () => {
     expect(answerThinkingLevel('gemini-3.8-flash', '')).toBe('LOW');
   });
 });
+
+describe('saved model skips', () => {
+  const store = new Map<string, string>();
+  const ls = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => { store.set(k, v); } };
+
+  it('keeps only skips still in the future, and survives bad data', async () => {
+    const { loadSkips, saveSkips } = await import('./firebaseWeb');
+    const g = globalThis as { localStorage?: unknown };
+    const before = g.localStorage;
+    g.localStorage = ls;
+    try {
+      saveSkips(new Map([['a', 2000], ['b', 500]]), 1000);
+      expect([...loadSkips(1000)]).toEqual([['a', 2000]]);
+      expect(loadSkips(3000).size).toBe(0);
+      store.set('sprout.modelSkip', 'not json');
+      expect(loadSkips(0).size).toBe(0);
+      store.set('sprout.modelSkip', JSON.stringify({ a: 'soon', b: 5000 }));
+      expect([...loadSkips(0)]).toEqual([['b', 5000]]);
+      store.set('sprout.modelSkip', 'null');
+      expect(loadSkips(0).size).toBe(0);
+    } finally {
+      g.localStorage = before;
+    }
+  });
+});

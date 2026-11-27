@@ -2,7 +2,14 @@
 
 Last updated: 2026-11-27 evening IST, after the live smoke test. Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
 
-## Nov 27 night: voice and sounds (not yet committed or deployed)
+## Nov 27 late night: faster answers (not yet committed or deployed)
+- **Why:** the user found "Thinking it over" too slow. A cloud-safe question was guard, answer, referee and often simplify, one after another (about 9 s live).
+- **Changes:** (1) in cloud-safe mode (no device model) the cloud answer starts at the same time as the cloud guard, on the same redacted text; used only for an ok or sensitive verdict with no extra guard-found names, otherwise discarded without waiting and recorded as sent; with a device model nothing changes. (2) cloud answers are 2-4 sentences and the referee is told short answers and a question back are fine, so needless simplify calls stop. (3) the model quota skip (429/404, 10 min) is saved in localStorage `sprout.modelSkip`, so each visit no longer loses about 2 s on an exhausted model. (4) the privacy ledger counts a private detail once per question.
+- **Trade-off (told the user):** in cloud-safe mode an unsafe question is now also sent to the answer model (the same redacted text the cloud guard already sees); the answer is thrown away, never shown. Costs one extra quota call for unsafe questions.
+- **Measured with real models:** about 6.2 s from question to answer (was about 9 s); referee passed first time.
+- **Verified:** Opus review (no path shows an early answer wrongly; its fixes applied), unit 174/174, eval pass, e2e 53/53.
+
+## Nov 27 night: voice and sounds (committed 1919968, deployed)
 - **User asked** for a good voice and fun, child-friendly sounds at every stage. Choices (user picked): Kokoro on-device voice, howler.js with CC0 sounds. New deps: `howler` 2.2.4, `kokoro-js` 1.2.1, dev `@types/howler`. `pnpm-workspace.yaml` marks `onnxruntime-node` and `sharp` builds as not allowed (node-only deps of kokoro-js; the browser uses onnxruntime-web).
 - **Voice** (`app/src/kid/kokoro.worker.ts`, `neuralVoice.ts`, `voiceText.ts`, `speech.ts`): Kokoro-82M q8 on WASM in a worker, voice `af_heart`, made at speed 0.86 and played at 1.09x for a brighter, younger sound. One job at a time; "speak now" beats background preparation. State on `<html data-neural-voice>` (loading, ready, speaking, broken).
 - **Measured on this laptop (Core 5 210H, no cross-origin isolation, so one thread):** model download about 35-45 s once; a sentence takes 2-6x its length to make (5-17 s for 2.5 s of audio, depending on load). WebGPU fp32 and WASM fp32 were no faster. Hence: prepare the newest answer in the background (tap on it: starts at 0.0 s), older unprepared answers wait about 5-7 s with "Warming up my voice…". First tap on a fresh device uses the system voice while Kokoro loads. Threads would need COOP/COEP headers, which risk breaking the reCAPTCHA App Check iframe: not done.

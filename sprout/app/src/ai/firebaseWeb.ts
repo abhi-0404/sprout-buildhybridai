@@ -102,6 +102,24 @@ export function skipFor(e: unknown): number {
   return s === 429 || s === 404 ? SKIP_MS : SHORT_SKIP_MS;
 }
 
+const SKIP_KEY = 'sprout.modelSkip';
+
+/** Saved skips still in the future (bad or missing data gives none). Exported for tests. */
+export function loadSkips(now: number): Map<string, number> {
+  try {
+    const raw = JSON.parse(globalThis.localStorage?.getItem(SKIP_KEY) ?? '{}') as Record<string, unknown>;
+    return new Map(Object.entries(raw).filter((e): e is [string, number] => typeof e[1] === 'number' && e[1] > now));
+  } catch {
+    return new Map();
+  }
+}
+
+/** Saves the skips that have not expired yet. Exported for tests. */
+export function saveSkips(skips: Map<string, number>, now: number): void {
+  const live = [...skips].filter(([, until]) => until > now);
+  try { globalThis.localStorage?.setItem(SKIP_KEY, JSON.stringify(Object.fromEntries(live))); } catch { /* not remembered */ }
+}
+
 function attemptTimeout(): Error {
   return Object.assign(new Error('[504] cloud attempt took too long'), { customErrorData: { status: 504 } });
 }
@@ -111,8 +129,9 @@ export class FirebaseWebAi implements AiClient {
   private ai: AI;
   private models = new Map<string, GenerativeModel>();
   private cloudModels: string[];
-  /** Model name -> time (ms) until which it is skipped. */
-  private skipUntil = new Map<string, number>();
+  /** Model name -> time (ms) until which it is skipped. Kept across page loads, so a model that
+   *  is out of its daily quota is not asked again (about 2 s lost) on every visit. */
+  private skipUntil: Map<string, number>;
 
   constructor(
     private cloudModel = import.meta.env.VITE_CLOUD_MODEL || 'gemini-3.5-flash',
@@ -122,6 +141,7 @@ export class FirebaseWebAi implements AiClient {
   ) {
     this.ai = getAI(getFirebaseApp(), { backend: new GoogleAIBackend() });
     this.cloudModels = cloudModelList(cloudModel, fallbacks);
+    this.skipUntil = loadSkips(this.now());
   }
 
   private model(mode: AiMode, cloudModel: string, jsonSchema?: object): GenerativeModel {
@@ -210,7 +230,11 @@ export class FirebaseWebAi implements AiClient {
         // a 400 can be specific to the request, so it must not take the model away from others.
         const badFallback = name !== this.cloudModel && errorStatus(e) === 400;
         if (!isModelUnavailable(e) && !badFallback) throw e;
-        if (!badFallback) this.skipUntil.set(name, this.now() + skipFor(e));
+        if (!badFallback) {
+          this.skipUntil.set(name, this.now() + skipFor(e));
+          // Only quota and missing-model skips (10 min) outlast a reload; overload skips are short.
+          if (skipFor(e) === SKIP_MS) saveSkips(this.skipUntil, this.now());
+        }
         last = e;
       }
     }

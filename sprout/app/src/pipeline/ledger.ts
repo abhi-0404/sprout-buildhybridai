@@ -48,6 +48,8 @@ export function totals(turns: Turn[], pricing: Pricing = DEFAULT_PRICING): Ledge
     if (turn.distress) t.distressEvents++;
     if (turn.route === 'blocked') t.blocked++;
     if (turn.guard) t.topics[turn.guard.topic] = (t.topics[turn.guard.topic] ?? 0) + 1;
+    // Each private detail counts once per question, however many cloud calls carried it.
+    const leaked = new Set<string>();
     for (const s of turn.steps) {
       t.aiCalls++;
       const inTok = tokens((s.sentToCloud ?? '').length || turn.sanitized.length + 400);
@@ -57,9 +59,10 @@ export function totals(turns: Turn[], pricing: Pricing = DEFAULT_PRICING): Ledge
       else {
         t.cloudCalls++;
         t.estCloudCostUsd += cost;
-        for (const r of turn.redactions) if (s.sentToCloud?.includes(r.original)) t.identifiersSentToCloud++;
+        for (const r of turn.redactions) if (s.sentToCloud?.includes(r.original)) leaked.add(r.original);
       }
     }
+    t.identifiersSentToCloud += leaked.size;
   }
   return t;
 }
