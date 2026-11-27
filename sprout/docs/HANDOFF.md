@@ -1,6 +1,16 @@
 # Sprout: handoff
 
-Last updated: 2026-11-26 night IST, after the Hosting deploy (build OK, 76/76 unit tests, e2e 53/53 earlier today). Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+Last updated: 2026-11-27 evening IST, after the live smoke test. Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+
+## Nov 27 evening: live smoke test (read this first)
+- **UI on the live site works:** https://buildhybridai-c1694.web.app in headless and visible Chrome at 390px: welcome, Try a sample family, kid view, question submit, parent gate, all 6 parent tabs, no sideways scroll, no JS exceptions. Load about 0.7-2 s.
+- **Cloud answers fail on the live domain in automated Chrome.** App Check `exchangeRecaptchaEnterpriseToken` returns 403, then every `gemini-3.5-flash:generateContent` call returns 401 (App Check is enforced). The kid sees the fail-closed message "I couldn't double-check that question just now". The Firebase SDK then throttles App Check in that browser for 24 h.
+- **Config checked by read-only API calls, all correct:** reCAPTCHA key "Sprout web App Check" (score type) allows `buildhybridai-c1694.web.app` and `.firebaseapp.com`; App Check web app uses the same site key; minimum valid score 0.5; enforcement only on `firebaseml.googleapis.com`.
+- **Likely cause:** reCAPTCHA scores a fresh, automation-driven Chrome profile below 0.5. Not proven: reading the key's score metrics was blocked by a permission check.
+- **Nov 27 12:15 UTC: minimum score lowered 0.5 -> 0.3** (user approved, App Check REST PATCH). The automated visible Chrome still got 403 ten minutes later, so either automation scores under 0.3 or there is another cause. Next decider: one question in the user's normal Chrome. If that fails too, try 0.1 (user's call) and look at the key's score metrics in the reCAPTCHA console.
+- **To do (user):** test in your own Chrome (sample family, ask "Why is the sky blue?"). If it also fails, lower the App Check minimum score (Firebase console > App Check > Apps > Sprout web > reCAPTCHA Enterprise), for example to 0.3, and retest in a fresh profile (because of the 24 h throttle). Judges open the link in ordinary browsers, so this decides whether the live demo answers.
+- **Bundle size checked:** first load is one JS file, 364 kB raw, 100 kB brotli. The 696 kB chunk Vite warns about is Firestore, already lazy. No change made.
+- **Smoke script** (not in the repo): headless Chrome over CDP, same approach as the screenshot helper; records console errors and HTTP >= 400.
 
 ## "Seed packet" UI redesign (2026-11-26 night)
 - **Why:** the user found the live UI bland (system font, flat grey-green panels after the minimalist pass). Chosen direction (user picked it): "seed packet", a garden notebook for curious kids.

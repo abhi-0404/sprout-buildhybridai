@@ -19,9 +19,12 @@ Before each wake-up's work: read this file, do the first unchecked task, tick it
 - [x] 5. Third blind eval set: written blind by a separate agent, measured once (f09fd3f). 18 of 65 details leaked (deterministic layer), urgent 12/16, concern 7/24, 1 false alarm.
 - [x] 5b. Fix the v3 misses by category (fuzzy profile names, unlisted names after relation words, flat/pincode/roll no/route, handles, running away, threats, bullying, Hinglish). Reviewer pass required (safety code). Then update the claims in README and SUBMISSION honestly.
 - [x] 6. Submission prep: refresh README, docs/SUBMISSION.md and docs/DEMO_SCRIPT.md with the live URL, the new UI and current numbers.
-- [ ] 7. Final: update docs/HANDOFF.md with the night's work, final screenshots, morning summary below.
+- [x] 8. Live smoke test of https://buildhybridai-c1694.web.app in real Chrome: welcome, sample family, kid question, parent gate, console errors.
+- [x] 9. Performance: split the large first-load JS chunk (Vite warns over 500 kB) so phones open the app faster. Tests + reviewer.
+- [x] 7. Final: update docs/HANDOFF.md with the night's work, final screenshots, morning summary below.
 
 ## Needs you
+- **Live cloud answers fail in automated Chrome** (Nov 27 smoke test): App Check reCAPTCHA exchange returns 403, every Gemini call 401, the kid sees "I couldn't double-check that question". Config is correct (key domains, site key, App Check registration all match), so the likely cause is a reCAPTCHA score under the 0.5 minimum for a fresh automated profile. Check: open https://buildhybridai-c1694.web.app in your normal Chrome, Try a sample family, ask "Why is the sky blue?". If it fails there too, lower App Check > Apps > Sprout web > reCAPTCHA Enterprise > minimum score (for example 0.3). Note: after one 403 the SDK blocks that browser for 24 h, so test in a different profile after changing it.
 - Record the demo video (docs/DEMO_SCRIPT.md) and paste its YouTube link into docs/SUBMISSION.md.
 - Pick the Devpost platforms: Web is live; Android (debug APK) and iOS (simulator build) only build in CI so far.
 - Dev tool upgrade (Vite 6.4.4+, Vitest 4.1.12+): a dependency change, so it waits for your OK.
@@ -33,3 +36,7 @@ Before each wake-up's work: read this file, do the first unchecked task, tick it
 - 01:44 Task 4 done: 24 new unit tests (ledger, JSON parsers, big-brain view helpers, Remote Config merge). 100/100 unit, tsc clean. No bugs found in those modules. Pushed, no deploy needed (tests only).
 - 02:03 Task 5b done: v3 misses fixed by category; Opus review found 3 must-fix (jk filter, game filter, false urgent) + address-order leak + over-redaction, all fixed with regression tests. All 4 sets: 0 leaks, all distress caught, 0 false alarms (optimistic, labelled). 139/139 unit, 53/53 e2e. README, SUBMISSION, WINNING-PLAN claims updated honestly.
 - 02:03 Task 6 done: live link, GitHub link, test counts and honest eval claims in README/SUBMISSION/DEMO_SCRIPT; root README fixed (no long dashes, pnpm); checklist verified (public repo, Apache-2.0, AI Logic import, no secrets).
+- Nov 27 17:40 Task 8 done: live smoke test in headless and visible Chrome. Welcome, sample family, kid view, parent gate, all 6 parent tabs work, no sideways scroll at 390px, no JS exceptions. Cloud answers fail (App Check 403, see Needs you).
+- Nov 27 17:45 Task 9 closed without code change: first load is one 364 kB JS file, 100 kB over the wire (brotli). The 696 kB chunk Vite warns about is Firestore, already lazy-loaded. Not worth the risk before the deadline.
+- Nov 27 17:50 Task 7 done: HANDOFF.md updated.
+- Nov 27 17:50 IST App Check minimum score lowered to 0.3 (user approved). Automated Chrome still 403. Waiting on the user's own Chrome test.
