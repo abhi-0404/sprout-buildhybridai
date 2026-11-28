@@ -214,9 +214,9 @@ async function answerOn(deps: Deps, steps: Step[], where: Where, sanitized: stri
 
 /** The on-device model checks the cloud's answer before the child sees it. Fails closed. */
 async function referee(
-  deps: Deps, steps: Step[], sanitized: string, answer: string,
+  deps: Deps, steps: Step[], sanitized: string, answer: string, onDevice = deps.deviceReady,
 ): Promise<{ answer: string; referee: Turn['referee'] }> {
-  const where: Where = deps.deviceReady ? 'device' : 'cloud';
+  const where: Where = onDevice ? 'device' : 'cloud';
   const mode = where === 'device' ? 'only_device' : 'only_cloud';
   let verdict: RefereeVerdict;
   let reason: string;
@@ -257,7 +257,7 @@ interface EarlyAnswer { result: Promise<AiResult>; steps: Step[]; prompt: string
 
 /** Cloud answer + referee; falls back to the device answer if the cloud call fails. `early` is a
  *  cloud answer already started on exactly `shell.sanitized`. */
-async function bigAnswer(shell: Shell, deps: Deps, steps: Step[], early?: EarlyAnswer): Promise<Turn> {
+async function bigAnswer(shell: Shell, deps: Deps, steps: Step[], early?: EarlyAnswer, deviceFallback = true): Promise<Turn> {
   const { sanitized, redactions } = shell;
   let text: string;
   try {
@@ -268,7 +268,7 @@ async function bigAnswer(shell: Shell, deps: Deps, steps: Step[], early?: EarlyA
     }
   } catch (e) {
     if (e instanceof LeakError) return { ...shell, route: 'blocked', answerWhere: 'script', answer: BLOCKED_ANSWER_REPLY };
-    if (!deps.deviceReady) {
+    if (!deps.deviceReady || !deviceFallback) {
       if (cloudResting(e)) return { ...shell, route: 'blocked', answerWhere: 'script', answer: RESTING_REPLY };
       throw e;
     }
@@ -276,7 +276,9 @@ async function bigAnswer(shell: Shell, deps: Deps, steps: Step[], early?: EarlyA
     return { ...shell, route: 'device', answerWhere: 'device', answer: restore(d.text.trim(), redactions, deps.profile) };
   }
   const checked = deps.policy.refereeCloudAnswers
-    ? await referee(deps, steps, sanitized, text)
+    // After the device model just failed (deviceFallback false), the cloud checks the answer too,
+    // as in cloud-safe mode: the slow device model would most likely fail again.
+    ? await referee(deps, steps, sanitized, text, deps.deviceReady && deviceFallback)
     : { answer: text, referee: undefined };
   return {
     ...shell, route: 'cloud', answerWhere: 'cloud', queued: false,
@@ -356,7 +358,16 @@ export async function ask(rawQuestion: string, deps: Deps): Promise<Turn> {
   if (wantsCloud && online) return bigAnswer(shell, deps, steps, usable);
   // 5b. Device answers (simple question, or a quick answer now while a big one waits).
   if (deps.deviceReady) {
-    const r = await answerOn(deps, steps, 'device', sanitized);
+    let r: AiResult;
+    try {
+      r = await answerOn(deps, steps, 'device', sanitized);
+    } catch (e) {
+      // The on-device model failed (for example too slow on a busy laptop). The guard already let
+      // this sanitized question through, so online it goes to the cloud like a big question would
+      // (refereed as usual), instead of leaving the child with no answer.
+      if (online) return bigAnswer(shell, deps, steps, undefined, false);
+      throw e;
+    }
     const queued = g.verdict.needsBigBrain && policy.allowCloud && !deps.isOnline();
     return {
       ...shell, route: queued ? 'queued' : 'device', answerWhere: 'device', queued,

@@ -48,7 +48,9 @@ export function KidApp() {
     setAnnounce('');
     window.setTimeout(() => setAnnounce(msg), 60);
   };
-  const speech = useReadAloud();
+  // True once an answer of this visit is on screen: the read-aloud voice starts loading after that.
+  const [answered, setAnswered] = useState(false);
+  const speech = useReadAloud(answered && pending === null);
   useEffect(() => { preloadSounds(); play('open'); }, []);
   const endRef = useRef<HTMLDivElement>(null);
 
@@ -78,7 +80,8 @@ export function KidApp() {
           setFreshId(t.id);
           say(`The big brain added more. ${done.answer}`);
         }
-      } catch {
+      } catch (e) {
+        console.warn('[sprout] queued question failed, will retry:', e);
         const n = (r?.n ?? 0) + 1;
         retry.current.set(t.id, { n, at: Date.now() + Math.min(300000, 30000 * 2 ** (n - 1)) });
       } finally {
@@ -121,10 +124,13 @@ export function KidApp() {
     try {
       const turn = await ask(q, depsRef.current);
       setTurns((prev) => [...prev, turn]);
+      setAnswered(true);
       // Care messages get the softest, calmest sound; everything else a friendly chime.
       play(turn.route === 'distress' ? 'care' : 'answer');
       say(turn.answer);
-    } catch {
+    } catch (e) {
+      // Keep the reason visible to grown-ups in the browser console; the child sees a calm reply.
+      console.warn('[sprout] question failed:', e);
       play('care');
       setFailedQuestion(q);
     } finally {
@@ -192,7 +198,7 @@ export function KidApp() {
                 <div className="k-row k-row-sprout">
                   <Mascot size={40} mood="calm" animated={false} />
                   <div className="k-bubble k-sprout">
-                    <p className="k-answer">Oops, my thinking got tangled up. Want to try that again?</p>
+                    <p className="k-answer">I couldn't reach my thinking just now. Let's wait a moment and try again!</p>
                     <button type="button" className="k-link" onClick={() => void send(failedQuestion)}>Try again</button>
                   </div>
                 </div>

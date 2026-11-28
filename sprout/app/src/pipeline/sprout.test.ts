@@ -157,9 +157,19 @@ describe('empty model answers never reach the child', () => {
     expect(t.answer.trim()).not.toBe('');
   });
 
-  it('an empty device answer is a failed turn (the kid view offers a retry), not an empty bubble', async () => {
+  it('a failed device answer goes to the cloud when online (refereed), never an empty bubble', async () => {
     const ai = new FakeAi('available', { answer: answerOnlyFrom('device', '') });
-    await expect(ask('what is a volcano?', deps(ai))).rejects.toThrow(/empty device answer/);
+    const t = await ask('what is a volcano?', deps(ai));
+    expect(t.answerWhere).toBe('cloud');
+    expect(t.answer.trim()).not.toBe('');
+    // The device just failed, so the cloud checks the answer too (the slow device would fail again).
+    expect(t.steps.find((s) => s.task === 'referee')?.where).toBe('cloud');
+    expect(t.referee?.where).toBe('cloud');
+  });
+
+  it('a failed device answer offline is a failed turn (the kid view offers a retry), not an empty bubble', async () => {
+    const ai = new FakeAi('available', { answer: answerOnlyFrom('device', '') });
+    await expect(ask('what is a volcano?', deps(ai, { isOnline: () => false }))).rejects.toThrow(/empty device answer/);
   });
 
   it('an empty simplified answer is blocked, not shown', async () => {

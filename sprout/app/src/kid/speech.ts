@@ -101,7 +101,8 @@ export function useLocalVoiceInput(onText: (text: string) => void) {
   return { available, listening, problem, toggle };
 }
 
-export function useReadAloud() {
+/** `idle`: true when loading the neural voice now will not slow an answer (see below). */
+export function useReadAloud(idle: boolean) {
   const synth = typeof window !== 'undefined' ? window.speechSynthesis : undefined;
   const [neuralOk] = useState(neuralVoiceSupported);
   // False until the voice list shows an installed (on-device) voice: before that, the browser's
@@ -132,23 +133,23 @@ export function useReadAloud() {
     };
   }, [synth]);
   useEffect(() => {
-    // A device that downloaded the voice before loads it now (from its own cache), so the first
-    // "Read to me" already uses it.
-    // Not in the phone apps: there the model loads only when a child first asks to hear an answer,
-    // to save memory and battery.
-    // On the web the voice is also fetched on a first visit, a few seconds after the chat opens
-    // (so it does not slow the first answer), because the first "Read to me" should already sound
-    // natural. Skipped in automated browsers (tests).
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    if (neuralOk && !isNativeApp()) {
-      void neuralVoiceCached().then((yes) => {
-        if (yes) neuralVoice().warm();
-        else if (!navigator.webdriver) timer = setTimeout(() => neuralVoice().warm(), 4000);
-      });
-    }
     const off = neuralVoice().subscribe(() => rerender((n) => n + 1));
-    return () => { if (timer) clearTimeout(timer); off(); neuralVoice().stop(); };
-  }, [neuralOk]);
+    return () => { off(); neuralVoice().stop(); };
+  }, []);
+  // On the web the voice loads ahead of time, so "Read to me" already sounds natural: but only once
+  // `idle` is true (the first answer of this visit is on screen and no question is being answered).
+  // Loading it takes a lot of CPU for a while; on a device with an on-device model (Gemini Nano)
+  // that made the first answers time out. A tap before then loads it on demand.
+  // Not in the phone apps: there the model loads only when a child first asks to hear an answer,
+  // to save memory and battery. Skipped in automated browsers (tests) unless already downloaded.
+  const warmed = useRef(false);
+  useEffect(() => {
+    if (!idle || warmed.current || !neuralOk || isNativeApp()) return;
+    warmed.current = true;
+    void neuralVoiceCached().then((yes) => {
+      if (yes || !navigator.webdriver) neuralVoice().warm();
+    });
+  }, [idle, neuralOk]);
 
   const clear = useCallback((id: string) => {
     setSpeakingId((cur) => (cur === id ? null : cur));
