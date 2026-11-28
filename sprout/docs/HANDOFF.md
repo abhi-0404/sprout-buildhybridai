@@ -1,6 +1,12 @@
 # Sprout: handoff
 
-Last updated: 2026-11-27 evening IST, after the live smoke test. Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+Last updated: 2026-11-28 morning IST, after the voice fix deploy. Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+
+## Nov 28 morning: natural read-aloud voice (committed 5147944, deployed)
+- **Why:** the user found the live voice robotic. The first "Read to me" used the Windows system voice (pitch 1.2) while Kokoro was still downloading, and Kokoro itself was played about 9% fast to lift the pitch.
+- **Changes** (`app/src/kid/speech.ts`, `app/src/kid/neuralVoice.ts`): Kokoro always reads; while it loads the button shows "Warming up my voice... N%". The system voice is used only where Kokoro cannot run or fails to load. On the web Kokoro preloads about 4 s after chat opens (about 90 MB, cached by the browser). Natural pitch, a touch slower. Fallback picks the most natural English system voice at pitch 1.
+- **Verified:** unit 186/186, tsc, e2e 53/53, headless Chrome capture (first tap went to Kokoro). Live site serves the new bundle; android-build and ios-build CI green.
+- **Left:** if the voice still is not warm enough, try other Kokoro voices and let the user pick from samples.
 
 ## Nov 28 night (overnight, user asleep): quota safety for judging, docs
 - **Why:** judging (Dec 10-16) uses the live site on the free Gemini tier (20 requests/day on 3.5-flash, about 3 calls per question without Nano). A judge-style review (Opus) scored about 4/5 overall and named running out of quota as the top risk.
@@ -11,7 +17,7 @@ Last updated: 2026-11-27 evening IST, after the live smoke test. Deadline: Mon N
 - **Secret check panel** (`app/src/kid/SeenPanel.tsx`): the grown-ups list now starts with the two rule steps that always run on the device (hid private details, checked for upset feelings), names the cloud model per step, and marks a thrown-away early answer "started early, not used" (`Step.unused`). Judges without Gemini Nano now see what ran locally.
 - **Video kit** (`docs/video/`): hook, title and end cards (1920x1080 PNG, from `card.html`), `captions.srt` timed to the script (about 240 words).
 - **Verified:** two Opus reviews (no path shows an unchecked answer; all fixes applied), unit 186/186, eval pass, e2e 53/53, panel screenshot at 360px.
-- **NOT committed, pushed or deployed:** the permission check blocked commit/push/deploy overnight (not asked for in that message). Everything is staged and tested; the live site still runs 67055cd.
+- **Committed in db3c0a3** and deployed on Nov 28 morning.
 - **Not done (ideas, need a decision):** merging the cloud guard and answer into one call would cut quota use from 3 to 2 calls per question, but changes how the guard classifies (no eval measures the cloud guard), so it was left for the user. A "60-second tour" autoplay was judged lower value than the above.
 
 ## Nov 27 late night: faster answers (committed 67055cd, deployed)
