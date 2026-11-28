@@ -1,12 +1,17 @@
 # Sprout: handoff
 
-Last updated: 2026-11-28 morning IST, after the voice fix deploy. Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
+Last updated: 2026-11-28 afternoon IST. Deadline: Mon Nov 30 2026, 2:00 PM PT (Dec 1, 3:30 AM IST). Target submission: Nov 30, 10 PM IST.
 
-## Nov 28 midday: "thinking got tangled up" in Chrome with Gemini Nano (NOT committed yet)
+## Nov 28 afternoon: what is left (only the user can do these)
+- **Remote Config published** (version 1, values equal to the app defaults, so no behaviour change). Emergency during judging: Firebase console > Remote Config > `cloud_model` = `gemini-3.5-flash-lite` > Publish (open browsers pick it up within an hour). Published with a temporary config file; `firebase/firebase.json` still has no remoteconfig entry, so `pnpm hosting` never overwrites console edits.
+- **Android kept in Demo mode on purpose:** a real-Firebase APK needs a debug App Check token from a real phone (Logcat), otherwise every cloud call from a judge's phone fails.
+- **User to do:** (1) ask 2 questions on the live site in your own Chrome; (2) record the video after 1:30 PM IST (quota reset), per `docs/DEMO_SCRIPT.md`, upload public to YouTube; (3) paste `docs/SUBMISSION.md` into Devpost, add the video URL, tick the last box, submit by Nov 30 10 PM IST. Optional: borrowed Android phone; Appetize upload of the iOS simulator zip (needs a free Appetize account).
+
+## Nov 28 midday: "thinking got tangled up" in Chrome with Gemini Nano (committed 6873d7a, deployed)
 - **Cause (reproduced):** the user's Chrome has Gemini Nano, so the app runs hybrid. Nano is slow on this laptop (5-30 s per call; 20 s limit per call), slowest while the Kokoro voice loads (wasm, CPU heavy; it preloaded 4 s after chat open). A failed on-device *answer* was thrown out of ask() and shown as "tangled up". Fresh visitors without Nano were fine (cloud path works; 3.5-flash hits its daily 429 and flash-lite takes over).
 - **Fixes:** (1) `pipeline/sprout.ts`: a failed device answer while online goes to the cloud on the same guarded, sanitized text, refereed in the cloud (`referee(..., onDevice)`, `bigAnswer(..., deviceFallback=false)`); offline it still fails. (2) `kid/speech.ts` + `KidApp.tsx`: the voice loads only after the first answer of the visit, when no question is pending (`useReadAloud(idle)`); a tap before that still loads it on demand. (3) calmer failure text "I couldn't reach my thinking just now..." and the error is logged with `console.warn('[sprout] question failed:', e)` (it was swallowed).
 - **Verified:** Opus review (no privacy issue; its referee point applied), unit 187/187, tsc, eval, e2e 53/53.
-- **Left:** commit, push, deploy (`cd app; pnpm hosting`). Note: Nano availability() can hang when two Chrome instances share the model folder (seen in testing only).
+- **Live:** deployed and the live bundle checked. Note: Nano availability() can hang when two Chrome instances share the model folder (seen in testing only).
 
 ## Nov 28 morning: natural read-aloud voice (committed 5147944, deployed)
 - **Why:** the user found the live voice robotic. The first "Read to me" used the Windows system voice (pitch 1.2) while Kokoro was still downloading, and Kokoro itself was played about 9% fast to lift the pitch.

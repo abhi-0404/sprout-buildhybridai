@@ -32,7 +32,7 @@ Sprout is an AI helper for 6 to 12 year olds. Its core idea flips "hybrid infere
   - Structured JSON output is used on both paths (`responseConstraint` on the device, `responseJsonSchema` in the cloud).
   - Gemini Nano runs the guard, the identity check, simple answers and the referee. Gemini runs the deep answers and the weekly parent note, which uses counts only.
   - Browsers without Gemini Nano run in **cloud-safe mode**: the deterministic redaction, the privacy gate and the distress rules still run on the device, and the guard, answer and referee run in the cloud on the redacted text only. The guard and the answer run at the same time (the answer is thrown away unless the guard approves), so an answer takes about 6 s.
-  - **Free-tier resilience:** cloud calls fall back from `gemini-3.5-flash` to `gemini-3.5-flash-lite` and `gemini-flash-lite-latest` on quota or overload, each step records which model answered (parent Activity tab), and when every model is out of quota the child gets an honest "the big brain is resting" message. Remote Config can switch the models without a redeploy.
+  - **Free-tier resilience:** cloud calls fall back from `gemini-3.5-flash` to `gemini-3.5-flash-lite` and `gemini-flash-lite-latest` on quota or overload, each step records which model answered (parent Activity tab), and when every model is out of quota the child gets an honest "the big brain is resting" message. Remote Config can switch the models without a redeploy. If the on-device model is too slow on a laptop, the question goes to the cloud on the same redacted text and is still refereed, so the child is never left without an answer.
 - **Firebase products:**
   - App Check (reCAPTCHA Enterprise; debug provider in development).
   - Auth (Google sign-in for the family).
@@ -52,7 +52,7 @@ Sprout is an AI helper for 6 to 12 year olds. Its core idea flips "hybrid infere
 
 ## Accomplishments we're proud of
 - **Measured, not claimed:** 623 synthetic test questions, run in a worst case that forces every question to the cloud with no help from the model. Three sets were written blind by separate authors; on the newest one, the rules alone (before any fix) kept 47 of 65 private details on the device and caught 12 of 16 urgent cases with 1 false alarm in 110. Fixing the misses by category brought every set to 0 leaks, every distress case caught and 0 false alarms, an optimistic number we label as such. The on-device model adds its own name detection on top of the rules. Results: `docs/EVAL.md`, first blind measurements: `docs/EVAL-HISTORY.md`.
-- **Testing:** 186 unit tests and 53 end-to-end browser checks, including accessibility (axe) in light and dark mode.
+- **Testing:** 187 unit tests and 53 end-to-end browser checks, including accessibility (axe) in light and dark mode.
 - **An independent code review** found 3 serious fail-open bugs, and all are fixed with regression tests.
 
 ## What we learned
