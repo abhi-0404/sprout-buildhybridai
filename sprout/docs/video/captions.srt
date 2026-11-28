@@ -1,0 +1,39 @@
+1
+00:00:00,000 --> 00:00:12,000
+Nearly nine in ten kids already use AI. Every chatbot sends a child's words, name and school to the cloud, and parents can't see what's asked.
+
+2
+00:00:12,000 --> 00:00:25,000
+Sprout is an AI you can hand your kid. A guardian on the device hides who they are before anything goes online.
+
+3
+00:00:25,000 --> 00:00:50,000
+Watch the name and the school. Before anything leaves the laptop, Sprout swaps them for placeholders.
+
+4
+00:00:50,000 --> 00:01:10,000
+The big brain only heard: I'm [child] from [school]. The answer comes back, a second AI checks it before my child sees it, and the real name is put back on the device.
+
+5
+00:01:10,000 --> 00:01:25,000
+And it reads aloud with a natural voice made on the laptop itself, so even the spoken answer never goes to a cloud speech service.
+
+6
+00:01:25,000 --> 00:01:45,000
+When a child is hurting, Sprout never improvises. The care message is written in advance and reviewed, it appears instantly, and the parent gets an alert, not a transcript.
+
+7
+00:01:45,000 --> 00:02:00,000
+Kids earn badges for curiosity, not screen time: no streaks, and a daily limit that suggests a break.
+
+8
+00:02:00,000 --> 00:02:30,000
+Parents see proof, not promises: zero private details sent to the cloud, every step and where it ran, and alerts for the moments that matter.
+
+9
+00:02:30,000 --> 00:02:45,000
+With Gemini Nano in Chrome, or on Android and iOS, the guard, simple answers and the referee move onto the device. Built with Firebase AI Logic hybrid inference, App Check, Remote Config, Firestore and Auth.
+
+10
+00:02:45,000 --> 00:02:55,000
+Sprout. The AI you can hand your kid.

@@ -43,6 +43,8 @@ export interface Step {
   outChars: number;
   /** Cloud model that answered (cloud steps only; may be a fallback model on the free tier). */
   model?: string;
+  /** Sent, but its result was not used (an early answer the guard did not approve). */
+  unused?: boolean;
 }
 
 export type Mode = 'hybrid' | 'cloud-safe' | 'offline';
@@ -87,6 +89,16 @@ const BLOCKED_REPLY =
   "That's not something I can help with, but I'm happy to answer lots of other questions! If it's important, ask a grown-up you trust.";
 const BLOCKED_ANSWER_REPLY =
   "Hmm, I couldn't find a good kid-friendly answer for that one. Try asking a grown-up, or ask me in a different way!";
+/** Every cloud model is out of its free daily quota, overloaded or too slow. Honest, calm, and
+ *  never an unchecked answer. */
+export const RESTING_REPLY =
+  "The big brain is taking a rest right now (it is very busy, or it has answered lots of questions today). Ask me again a bit later, or ask a grown-up!";
+
+/** True when the AI client says every cloud model is out of quota or busy (see firebaseWeb.ts). */
+function cloudResting(e: unknown): boolean {
+  return typeof e === 'object' && e !== null && (e as Record<string, unknown>).sproutCloudUnavailable === true;
+}
+
 const GUARD_FAILED_REPLY =
   "I couldn't double-check that question just now, so I'll skip it. Try asking it another way, or ask again in a moment!";
 const OFFLINE_NO_DEVICE_REPLY =
@@ -133,7 +145,17 @@ async function call(deps: Deps, steps: Step[], req: AiRequest, childText: string
     const found = findKnownIdentifiers(childText, deps.profile);
     if (found.length) throw new LeakError(found);
   }
-  const r = await withTimeout(deps.ai.generate(req), deps.timeoutMs ?? 20000);
+  let r: AiResult;
+  try {
+    r = await withTimeout(deps.ai.generate(req), deps.timeoutMs ?? 20000);
+  } catch (e) {
+    // A cloud call that ran out of time is the cloud being busy: say so honestly (a device timeout
+    // keeps the plain fail-closed messages).
+    if (req.mode !== 'only_device' && e instanceof Error && e.message.startsWith('AI call timed out')) {
+      throw Object.assign(e, { sproutCloudUnavailable: true });
+    }
+    throw e;
+  }
   // Source of truth for strict modes is the mode itself.
   const where: Where = req.mode === 'only_device' ? 'device' : req.mode === 'only_cloud' ? 'cloud' : r.source;
   steps.push({
@@ -203,7 +225,8 @@ async function referee(
       task: 'referee', mode, prompt: refereePrompt(sanitized, answer, deps.profile.ageBand), jsonSchema: REFEREE_SCHEMA,
     }, sanitized);
     ({ verdict, reason } = parseReferee(r.text));
-  } catch {
+  } catch (e) {
+    if (cloudResting(e)) return { answer: RESTING_REPLY, referee: { verdict: 'block', reason: 'The cloud checker is out of its daily quota, so the answer was not shown', where } };
     return { answer: BLOCKED_ANSWER_REPLY, referee: { verdict: 'block', reason: 'The answer could not be checked, so it was not shown', where } };
   }
   if (verdict === 'block') return { answer: BLOCKED_ANSWER_REPLY, referee: { verdict, reason, where } };
@@ -245,7 +268,10 @@ async function bigAnswer(shell: Shell, deps: Deps, steps: Step[], early?: EarlyA
     }
   } catch (e) {
     if (e instanceof LeakError) return { ...shell, route: 'blocked', answerWhere: 'script', answer: BLOCKED_ANSWER_REPLY };
-    if (!deps.deviceReady) throw e;
+    if (!deps.deviceReady) {
+      if (cloudResting(e)) return { ...shell, route: 'blocked', answerWhere: 'script', answer: RESTING_REPLY };
+      throw e;
+    }
     const d = await answerOn(deps, steps, 'device', sanitized);
     return { ...shell, route: 'device', answerWhere: 'device', answer: restore(d.text.trim(), redactions, deps.profile) };
   }
@@ -293,19 +319,19 @@ export async function ask(rawQuestion: string, deps: Deps): Promise<Turn> {
     early.result.catch(() => { /* handled where it is used; never an unhandled rejection */ });
   }
   const discardEarly = (): void => {
-    if (early) steps.push({ task: 'answer', where: 'cloud', latencyMs: 0, sentToCloud: early.prompt, outChars: 0 });
+    if (early) steps.push({ task: 'answer', where: 'cloud', latencyMs: 0, sentToCloud: early.prompt, outChars: 0, unused: true });
   };
 
   // 3. Guard (on-device when possible). If it should run but fails, fail closed.
   let g: GuardRun;
   try {
     g = await runGuard(deps, steps, first.text);
-  } catch {
+  } catch (e) {
     discardEarly();
     return {
       ...base, sanitized: first.text, redactions: first.redactions, mode: baseMode,
       ...(early ? { cloudSaw: first.text } : {}),
-      route: 'blocked', answerWhere: 'script', answer: GUARD_FAILED_REPLY,
+      route: 'blocked', answerWhere: 'script', answer: cloudResting(e) ? RESTING_REPLY : GUARD_FAILED_REPLY,
     };
   }
   const { text: sanitized, redactions } = redact(question, profile, g.verdict.names);
@@ -350,8 +376,8 @@ export async function resolveQueued(turn: Turn, deps: Deps): Promise<Turn> {
     let g: GuardRun;
     try {
       g = await runGuard(deps, steps, first.text);
-    } catch {
-      return { ...shell, guardPending: false, queued: false, route: 'blocked', answerWhere: 'script', answer: GUARD_FAILED_REPLY };
+    } catch (e) {
+      return { ...shell, guardPending: false, queued: false, route: 'blocked', answerWhere: 'script', answer: cloudResting(e) ? RESTING_REPLY : GUARD_FAILED_REPLY };
     }
     if (!g.ran) return turn; // still cannot guard: stay queued
     const { text: sanitized, redactions } = redact(turn.question, deps.profile, g.verdict.names);

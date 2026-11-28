@@ -1,8 +1,13 @@
 {
   "parameters": {
     "cloud_model": {
-      "defaultValue": { "value": "gemini-3.5-flash" },
-      "description": "Cloud Gemini model used for big questions and the weekly note.",
+      "defaultValue": { "value": "" },
+      "description": "Primary cloud Gemini model (web), for example gemini-3.5-flash-lite. Empty = the model the app was built with. Open browsers pick up a change within an hour.",
+      "valueType": "STRING"
+    },
+    "cloud_fallbacks": {
+      "defaultValue": { "value": "" },
+      "description": "Comma list of cloud models tried in order when the primary is out of quota or busy. Empty = the app's built-in list.",
       "valueType": "STRING"
     },
     "allow_cloud": {

@@ -40,3 +40,13 @@ Before each wake-up's work: read this file, do the first unchecked task, tick it
 - Nov 27 17:45 Task 9 closed without code change: first load is one 364 kB JS file, 100 kB over the wire (brotli). The 696 kB chunk Vite warns about is Firestore, already lazy-loaded. Not worth the risk before the deadline.
 - Nov 27 17:50 Task 7 done: HANDOFF.md updated.
 - Nov 27 17:50 IST App Check minimum score lowered to 0.3 (user approved). Automated Chrome still 403. Waiting on the user's own Chrome test.
+
+## Night of Nov 28 (user asleep, asked for work through the night)
+- Judge-style review (Opus): about 4/5 overall; top risk = free quota running out during judging; Best Android/iOS unlikely without device runs.
+- Probed more free models; added `gemini-flash-lite-latest` as a second fallback. Others too slow or unsafe (gemma printed its reasoning).
+- Honest "the big brain is taking a rest" message when every cloud model is out of quota, busy or out of time (never an unchecked answer); 18 s budget per request across models.
+- Remote Config `cloud_model` / `cloud_fallbacks` now used by the web client (empty defaults = no change). Publishing the template was blocked by a permission check.
+- Secret check panel shows the on-device rule steps and the model per cloud step.
+- README / SUBMISSION / DEMO_SCRIPT corrected for the judges' reality; video kit in `docs/video/`.
+- Two Opus reviews; all findings fixed. Unit 186/186, eval pass, e2e 53/53.
+- Commit, push and deploy were blocked by the permission check (not requested in that message): all changes are staged, not shipped.

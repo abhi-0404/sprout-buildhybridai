@@ -218,6 +218,61 @@ describe('fallback timing and skip rules', () => {
     expect(SHORT_SKIP_MS).toBeLessThan(SKIP_MS);
   });
 
+  it('Remote Config can switch the models; bad names are ignored', async () => {
+    const ai = new FirebaseWebAi('a', 'b');
+    ai.setCloudModels('gemini-x', 'gemini-y, BAD NAME ,gemini-z');
+    cloudStatus = { 'gemini-x': 429, 'gemini-y': 429 };
+    expect((await ask(ai)).model).toBe('gemini-z');
+  });
+
+  it('empty Remote Config values change nothing (the build settings stay)', async () => {
+    const ai = new FirebaseWebAi('a', 'b');
+    ai.setCloudModels('', '');
+    cloudStatus = { a: 429 };
+    expect((await ask(ai)).model).toBe('b');
+    expect(cloudModelsUsed).toEqual(['a', 'b']);
+  });
+
+  it('a remote primary alone keeps the existing fallbacks', async () => {
+    const ai = new FirebaseWebAi('a', 'b');
+    ai.setCloudModels('gemini-x', '');
+    cloudStatus = { 'gemini-x': 429 };
+    expect((await ask(ai)).model).toBe('b');
+  });
+
+  it('a fallback 400 among quota errors is not tagged as out of quota', async () => {
+    cloudStatus = { a: 429, b: 400, c: 429 };
+    const err = await ask(new FirebaseWebAi('a', 'b,c')).catch((e: unknown) => e);
+    expect((err as Record<string, unknown>).sproutCloudUnavailable).toBeUndefined();
+  });
+
+  it('tags the error when every model is out of quota, so the app can say so', async () => {
+    cloudStatus = { a: 429, b: 429 };
+    const err = await ask(new FirebaseWebAi('a', 'b')).catch((e: unknown) => e);
+    expect((err as Record<string, unknown>).sproutCloudUnavailable).toBe(true);
+  });
+
+  it('does not tag a plain failure (a bad request) as out of quota', async () => {
+    cloudStatus = { a: 400 };
+    const err = await ask(new FirebaseWebAi('a', 'b')).catch((e: unknown) => e);
+    expect((err as Record<string, unknown>).sproutCloudUnavailable).toBeUndefined();
+  });
+
+  it('the last model gets the rest of the budget, not only the per-attempt limit', async () => {
+    cloudStatus = { a: 429 };
+    slowModels = { b: 80 };
+    const r = await new FirebaseWebAi('a', 'b', () => Date.now(), 30, 1000)
+      .generate({ task: 'guard', mode: 'only_cloud', prompt: 'hi', jsonSchema: {} });
+    expect(r.model).toBe('b');
+  });
+
+  it('a request that runs out of budget ends as a tagged busy error', async () => {
+    slowModels = { a: 300, b: 300 };
+    const err = await new FirebaseWebAi('a', 'b', () => Date.now(), 30, 60)
+      .generate({ task: 'guard', mode: 'only_cloud', prompt: 'hi', jsonSchema: {} }).catch((e: unknown) => e);
+    expect((err as Record<string, unknown>).sproutCloudUnavailable).toBe(true);
+  });
+
   it('a model slower than the per-attempt limit hands over to the next one', async () => {
     slowModels = { a: 200 };
     const r = await new FirebaseWebAi('a', 'b', () => Date.now(), 30)

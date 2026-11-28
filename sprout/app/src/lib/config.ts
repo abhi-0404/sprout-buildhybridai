@@ -8,7 +8,10 @@ const firebaseApp = async () => (await import('./firebase')).getFirebaseApp();
 
 /** Defaults used until (or unless) a fetch succeeds. Keep in sync with the Remote Config template. */
 export const REMOTE_DEFAULTS = {
-  cloud_model: 'gemini-3.5-flash',
+  /** Empty means: keep the model the app was built with (VITE_CLOUD_MODEL or gemini-3.5-flash). */
+  cloud_model: '',
+  /** Empty means: keep the app's own fallback list. */
+  cloud_fallbacks: '',
   allow_cloud: true,
   referee_cloud_answers: true,
   max_device_chars: 600,
@@ -16,6 +19,8 @@ export const REMOTE_DEFAULTS = {
 
 export interface RemoteValues {
   cloudModel: string;
+  /** Comma list, or empty for the built-in list. */
+  cloudFallbacks: string;
   allowCloud: boolean;
   refereeCloudAnswers: boolean;
   maxDeviceChars: number;
@@ -34,6 +39,7 @@ export async function loadRemoteValues(): Promise<RemoteValues | null> {
     const maxChars = getValue(rc, 'max_device_chars').asNumber();
     return {
       cloudModel: getValue(rc, 'cloud_model').asString() || REMOTE_DEFAULTS.cloud_model,
+      cloudFallbacks: getValue(rc, 'cloud_fallbacks').asString(),
       allowCloud: getValue(rc, 'allow_cloud').asBoolean(),
       refereeCloudAnswers: getValue(rc, 'referee_cloud_answers').asBoolean(),
       maxDeviceChars: maxChars > 0 ? maxChars : REMOTE_DEFAULTS.max_device_chars,

@@ -195,3 +195,42 @@ describe('privacy ledger', () => {
     expect(totals([turn as never]).identifiersSentToCloud).toBe(1);
   });
 });
+
+describe('cloud out of quota', () => {
+  const resting = () => { throw Object.assign(new Error('[429 ] quota'), { sproutCloudUnavailable: true }); };
+
+  it('says the big brain is resting when the guard cannot run (not "could not double-check")', async () => {
+    const ai = new FakeAi('unavailable', { guard: resting, answer: resting });
+    const t = await ask('why is the sky blue?', deps(ai, { deviceReady: false }));
+    expect(t.route).toBe('blocked');
+    expect(t.answer).toMatch(/taking a rest/);
+  });
+
+  it('says resting when the referee cannot run, and never shows the unchecked answer', async () => {
+    const ai = new FakeAi('unavailable', { referee: resting, answer: () => 'UNCHECKED' });
+    const t = await ask('why is the sky blue?', deps(ai, { deviceReady: false }));
+    expect(t.answer).toMatch(/taking a rest/);
+    expect(t.answer).not.toContain('UNCHECKED');
+  });
+
+  it('says resting when only the answer call runs out of quota', async () => {
+    const ai = new FakeAi('unavailable', { answer: resting });
+    const t = await ask('why is the sky blue?', deps(ai, { deviceReady: false }));
+    expect(t.answer).toMatch(/taking a rest/);
+  });
+});
+
+describe('cloud timeouts', () => {
+  it('a cloud call that times out in the pipeline counts as busy (resting), and shows nothing unchecked', async () => {
+    class HangingAi extends FakeAi {
+      override async generate(req: Parameters<FakeAi['generate']>[0]) {
+        if (req.task === 'guard') return new Promise<never>(() => { /* never answers */ });
+        return super.generate(req);
+      }
+    }
+    const ai = new HangingAi('unavailable', { answer: () => 'UNCHECKED' });
+    const t = await ask('why is the sky blue?', deps(ai, { deviceReady: false, timeoutMs: 30 }));
+    expect(t.answer).toMatch(/taking a rest/);
+    expect(t.answer).not.toContain('UNCHECKED');
+  });
+});

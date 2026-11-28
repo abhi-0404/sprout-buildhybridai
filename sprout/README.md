@@ -88,15 +88,17 @@ The child's real identifiers and transcripts are not synced to Firestore: only a
 - **App Check**: reCAPTCHA Enterprise on web, Play Integrity and App Attest on native, debug providers for development.
 - **Authentication**: parent sign-in with Google; the child's device is paired with a family code.
 - **Cloud Firestore**: family settings, alerts and weekly counts, with offline persistence as the queue ([`firebase/firestore.rules`](firebase/firestore.rules)).
-- **Remote Config**: age-band policies, prompts, JSON schemas, model names and routing thresholds.
+- **Remote Config**: the safety policy switches (`allow_cloud`, `referee_cloud_answers`; they can only tighten a parent's choice) and the web cloud models (`cloud_model`, `cloud_fallbacks`), so a model can be switched during judging without a redeploy ([`firebase/remoteconfig.template.json`](firebase/remoteconfig.template.json)).
 - **Hosting**: the web app.
 
 ## Platform status
 | Platform | Status |
 |---|---|
-| Web | Working: kid app, parent dashboard, hybrid AI client, demo mode |
-| Android | Plugin sources and setup guide written ([`native/android`](native/android)); build and device run in progress |
-| iOS | Plugin sources and setup guide written ([`native/ios`](native/ios)); build and device run in progress |
+| Web | Working and live at https://buildhybridai-c1694.web.app: kid app, parent dashboard, hybrid AI client. Without Gemini Nano in the browser it runs in cloud-safe mode: redaction, the privacy gate, distress rules and the read-aloud voice still run on the device; the guard, answer and referee run in the cloud on redacted text |
+| Android | Capacitor app with a native plugin ([`native/android`](native/android)); compiles in GitHub Actions (debug APK). Not yet run on a real phone |
+| iOS | Capacitor app with a native plugin ([`native/ios`](native/ios)); compiles in GitHub Actions (Simulator build). Not yet run on a real device |
+
+**Free-tier capacity.** The live demo uses the free Gemini tier, which has small daily limits per model (20 requests a day for gemini-3.5-flash). The web client falls back through `gemini-3.5-flash-lite` and `gemini-flash-lite-latest`, and when every model is out of quota the child sees an honest "the big brain is resting" message, never an unchecked answer. Without Gemini Nano a question costs about 3 cloud calls (guard, answer, referee); the guard and the answer run at the same time, so an answer takes about 6 s.
 
 Lines marked `VERIFY:` in the native sources are API names that were not printed in the official docs and still need a compiler check.
 

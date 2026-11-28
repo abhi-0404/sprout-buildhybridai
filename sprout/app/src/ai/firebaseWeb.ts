@@ -58,7 +58,14 @@ export function answerThinkingConfig(model: string, override?: string): { thinki
  *  daily limit per project (20 requests for gemini-3.5-flash), so a short list multiplies it. */
 // Probed 2026-11-27 for this project: gemini-3.5-flash-lite answers (text and JSON); the gemini-2.5
 // models are retired for new users (404); gemini-3.8-flash returned 500 "high demand" after 96 s.
-export const DEFAULT_FALLBACK_MODELS = ['gemini-3.5-flash-lite'];
+// Probed 2026-11-28: gemini-flash-lite-latest answers text and JSON in 1-2 s (an alias; if it shares
+// a quota with 3.5-flash-lite it simply 429s fast and is skipped). Not used: gemini-flash-latest and
+// gemini-3.8-flash (20-99 s), gemma-4-31b-it (19 s, its JSON calls were overloaded, and its text
+// output included its own reasoning, which must never reach a child).
+export const DEFAULT_FALLBACK_MODELS = ['gemini-3.5-flash-lite', 'gemini-flash-lite-latest'];
+
+/** Set on the error when every cloud model is out of quota, missing, overloaded or too slow. */
+export const CLOUD_UNAVAILABLE = 'sproutCloudUnavailable';
 
 /** How long a model that answered 429 (quota) or 404 (not available) is skipped. */
 export const SKIP_MS = 10 * 60 * 1000;
@@ -67,6 +74,9 @@ export const SHORT_SKIP_MS = 60 * 1000;
 /** Per-model limit for one cloud attempt, so a slow primary still leaves time for the fallback
  *  inside the pipeline's 20 s timeout (the free tier has taken 24 s and 96 s on a single call). */
 export const ATTEMPT_MS = 8000;
+/** Total time for one request across all models: under the pipeline's 20 s call timeout, so a
+ *  request that runs out of models or time ends as a tagged "busy" error, not a plain timeout. */
+export const BUDGET_MS = 18000;
 
 /** The model list: primary first, then the fallbacks (comma list in VITE_CLOUD_FALLBACKS, or the
  *  defaults; an empty value turns fallback off), without duplicates. */
@@ -138,20 +148,42 @@ export class FirebaseWebAi implements AiClient {
     fallbacks: string | undefined = import.meta.env.VITE_CLOUD_FALLBACKS,
     private now: () => number = () => Date.now(),
     private attemptMs = ATTEMPT_MS,
+    private budgetMs = BUDGET_MS,
   ) {
     this.ai = getAI(getFirebaseApp(), { backend: new GoogleAIBackend() });
     this.cloudModels = cloudModelList(cloudModel, fallbacks);
     this.skipUntil = loadSkips(this.now());
+    this.tunedModel = cloudModel;
+  }
+
+  /** The model VITE_CLOUD_THINKING was tuned for (the build-time primary), fixed for life. */
+  private tunedModel: string;
+
+  /** Switches the cloud models at run time (from Remote Config). Names that do not look like a
+   *  model id are ignored, so a typo in the console cannot break the app. Empty values (the Remote
+   *  Config defaults) change nothing, so the build's own settings stay in force until someone
+   *  actually sets a value in the console. */
+  setCloudModels(primary: string, fallbacks: string): void {
+    const valid = (m: string) => /^[a-z0-9][a-z0-9.-]{2,63}$/.test(m);
+    const p = primary.trim();
+    const list = fallbacks.split(',').map((m) => m.trim()).filter(valid);
+    const rest = list.length ? list : this.cloudModels.slice(1);
+    if (valid(p)) this.cloudModel = p;
+    else if (!list.length) return;
+    this.cloudModels = [...new Set([this.cloudModel, ...rest])];
   }
 
   private model(mode: AiMode, cloudModel: string, jsonSchema?: object): GenerativeModel {
-    const key = `${cloudModel}|${mode}|${jsonSchema ? JSON.stringify(jsonSchema) : 'text'}`;
+    // On-device modes share one model object whatever the cloud model is (prepareDevice set it up).
+    const cloudPart = mode === 'only_device' ? 'device' : cloudModel;
+    const key = `${cloudPart}|${mode}|${jsonSchema ? JSON.stringify(jsonSchema) : 'text'}`;
     let m = this.models.get(key);
     if (!m) {
-      // The thinking override is tuned for the primary model; fallbacks use their own safe level.
+      // The thinking override is tuned for the build-time primary; other models use their own
+      // safe level (even if Remote Config makes one of them the primary).
       const thinking = answerThinkingConfig(
         cloudModel,
-        cloudModel === this.cloudModel ? import.meta.env.VITE_CLOUD_THINKING : undefined,
+        cloudModel === this.tunedModel ? import.meta.env.VITE_CLOUD_THINKING : undefined,
       );
       m = getGenerativeModel(this.ai, {
         mode: MODE[mode],
@@ -213,23 +245,30 @@ export class FirebaseWebAi implements AiClient {
     // The safety checks (guard, referee) use the same chain. The published evals measure the
     // on-device rules alone; each cloud step still records the model that answered (Activity).
     const t = this.now();
+    // Fixed for this request, even if Remote Config switches models while it runs.
+    const primary = this.cloudModel;
     const ready = this.cloudModels.filter((m) => (this.skipUntil.get(m) ?? 0) <= t);
     // All skipped: try the primary anyway rather than fail without asking.
-    const order = ready.length ? ready : [this.cloudModel];
+    const order = ready.length ? ready : [primary];
     const cloudOnly = req.mode === 'only_cloud' || req.mode === 'prefer_cloud';
     let last: unknown;
-    for (const name of order) {
+    let allUnavailable = true;
+    for (const [i, name] of order.entries()) {
       try {
         const attempt = this.once(req, name);
-        // Cloud modes get a per-model limit so a slow model hands over to the next in time.
-        // (prefer_device may be loading the on-device model, which can legitimately take long.)
-        const res = cloudOnly ? await withAttemptLimit(attempt, this.attemptMs) : await attempt;
+        // Cloud modes get a per-model limit so a slow model hands over to the next in time; the
+        // last model gets the rest of the request's budget. (prefer_device may be loading the
+        // on-device model, which can legitimately take long.)
+        const left = Math.max(1, this.budgetMs - (this.now() - t));
+        const limit = i < order.length - 1 ? Math.min(this.attemptMs, left) : left;
+        const res = cloudOnly ? await withAttemptLimit(attempt, limit) : await attempt;
         return { res, model: name };
       } catch (e) {
         // A fallback model that rejects this one request (400) is passed over but not skipped:
         // a 400 can be specific to the request, so it must not take the model away from others.
-        const badFallback = name !== this.cloudModel && errorStatus(e) === 400;
+        const badFallback = name !== primary && errorStatus(e) === 400;
         if (!isModelUnavailable(e) && !badFallback) throw e;
+        if (badFallback) allUnavailable = false;
         if (!badFallback) {
           this.skipUntil.set(name, this.now() + skipFor(e));
           // Only quota and missing-model skips (10 min) outlast a reload; overload skips are short.
@@ -238,6 +277,8 @@ export class FirebaseWebAi implements AiClient {
         last = e;
       }
     }
+    // Every model is out of quota or busy: tag the error so the app can say so honestly.
+    if (allUnavailable && last && typeof last === 'object') Object.assign(last, { [CLOUD_UNAVAILABLE]: true });
     throw last;
   }
 

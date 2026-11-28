@@ -7,7 +7,16 @@ type Impl = AiClient;
 let loading: Promise<Impl> | null = null;
 
 function impl(): Promise<Impl> {
-  loading ??= import('./firebaseWeb').then((m) => new m.FirebaseWebAi());
+  loading ??= import('./firebaseWeb').then((m) => {
+    const ai = new m.FirebaseWebAi();
+    // Remote Config can switch the cloud models without a redeploy (for example if a model runs
+    // out of quota during judging). Applied when it arrives; the defaults work meanwhile.
+    void import('../lib/config')
+      .then((c) => c.loadRemoteValues())
+      .then((v) => { if (v) ai.setCloudModels(v.cloudModel, v.cloudFallbacks); })
+      .catch(() => { /* keep the defaults */ });
+    return ai;
+  });
   return loading;
 }
 

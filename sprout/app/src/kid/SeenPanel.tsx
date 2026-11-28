@@ -89,12 +89,23 @@ export function SeenPanel({ turn, profile, id }: { turn: Turn; profile: ChildPro
         <details className="k-grownup">
           <summary>For grown-ups: how Sprout answered</summary>
           <ul className="k-steps-list">
+            {/* The rule-based steps always run on this device, before any AI call. */}
+            <li>
+              <Sprout size={16} strokeWidth={1.75} aria-hidden="true" />
+              <span className="k-step-name">Hid private details{turn.redactions.length ? ` (${turn.redactions.length})` : ''}</span>
+              <span className="k-step-where">on this device, rules</span>
+            </li>
+            <li>
+              <Sprout size={16} strokeWidth={1.75} aria-hidden="true" />
+              <span className="k-step-name">Checked for upset feelings</span>
+              <span className="k-step-where">on this device, rules</span>
+            </li>
             {turn.steps.map((s, i) => (
               <li key={i}>
                 {s.where === 'device' ? <Sprout size={16} strokeWidth={1.75} aria-hidden="true" /> : <Cloud size={16} strokeWidth={1.75} aria-hidden="true" />}
-                <span className="k-step-name">{TASK_LABEL[s.task]}</span>
-                <span className="k-step-where">{s.where === 'device' ? 'on this device' : 'cloud (Gemini)'}</span>
-                <span className="k-step-ms">{s.latencyMs} ms</span>
+                <span className="k-step-name">{TASK_LABEL[s.task]}{s.unused ? ' (started early, not used)' : ''}</span>
+                <span className="k-step-where">{s.where === 'device' ? 'on this device' : `cloud (${s.model ?? 'Gemini'})`}</span>
+                {!s.unused && <span className="k-step-ms">{s.latencyMs} ms</span>}
               </li>
             ))}
           </ul>
