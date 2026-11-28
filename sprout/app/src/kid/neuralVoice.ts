@@ -3,10 +3,10 @@
 // answers in the background once the voice is loaded, so "Read to me" starts without a wait.
 
 export const VOICE = 'af_heart'; // Kokoro's highest-rated voice: warm and clear.
-// A brighter, younger, more playful sound for children: speech is made a little slow and played a
-// little fast, which lifts the pitch (about 1.5 semitones) while the pace stays calm.
-const SPEED = 0.86;
-const LIFT = 1.09;
+// The voice at its natural pitch, a touch slower than normal so young children can follow.
+// (Playing it faster to lift the pitch made it sound artificial, so playback is not resampled.)
+const SPEED = 0.92;
+const LIFT = 1;
 const KEEP = 8; // prepared answers kept in memory (about 1-2 MB each)
 
 type Out =

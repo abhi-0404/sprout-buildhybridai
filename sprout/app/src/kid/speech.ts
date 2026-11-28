@@ -119,7 +119,9 @@ export function useReadAloud() {
       const all = synth.getVoices();
       if (!all.length) return; // not loaded yet: the default voice is used
       const local = all.filter((v) => v.localService);
-      voice.current = local.find((v) => v.lang.toLowerCase().startsWith('en')) ?? local[0];
+      const en = local.filter((v) => v.lang.toLowerCase().startsWith('en'));
+      // Prefer the device's natural-sounding voices over the old robotic ones.
+      voice.current = en.find((v) => /natural|neural|enhanced|premium/i.test(v.name)) ?? en[0] ?? local[0];
       setSystemOk(local.length > 0); // no on-device voice: never risk a cloud voice
     };
     pick();
@@ -134,9 +136,18 @@ export function useReadAloud() {
     // "Read to me" already uses it.
     // Not in the phone apps: there the model loads only when a child first asks to hear an answer,
     // to save memory and battery.
-    if (neuralOk && !isNativeApp()) void neuralVoiceCached().then((yes) => { if (yes) neuralVoice().warm(); });
+    // On the web the voice is also fetched on a first visit, a few seconds after the chat opens
+    // (so it does not slow the first answer), because the first "Read to me" should already sound
+    // natural. Skipped in automated browsers (tests).
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (neuralOk && !isNativeApp()) {
+      void neuralVoiceCached().then((yes) => {
+        if (yes) neuralVoice().warm();
+        else if (!navigator.webdriver) timer = setTimeout(() => neuralVoice().warm(), 4000);
+      });
+    }
     const off = neuralVoice().subscribe(() => rerender((n) => n + 1));
-    return () => { off(); neuralVoice().stop(); };
+    return () => { if (timer) clearTimeout(timer); off(); neuralVoice().stop(); };
   }, [neuralOk]);
 
   const clear = useCallback((id: string) => {
@@ -149,7 +160,7 @@ export function useReadAloud() {
     const u = new SpeechSynthesisUtterance(text);
     if (voice.current) u.voice = voice.current;
     u.rate = 0.95;
-    u.pitch = 1.2; // a little brighter and friendlier for children
+    u.pitch = 1; // a raised pitch makes the system voices sound more robotic
     u.onend = () => clear(id);
     u.onerror = () => clear(id);
     setSpeakingId(id);
@@ -165,10 +176,10 @@ export function useReadAloud() {
     setLoadingId(null);
     if (wasMine) return;
     const neural = neuralOk && !nv.broken;
-    // The neural voice is used once it is loaded, or when there is no installed voice to use
-    // meanwhile. On first use with an installed voice, that voice reads right away while the
-    // neural voice downloads in the background for next time.
-    if (neural && (nv.ready || !systemOk)) {
+    // The neural voice is always preferred: if it is still loading, the button shows
+    // "Warming up my voice" with progress rather than reading in a robotic system voice. The
+    // installed voice is used only when the neural voice cannot run or fails.
+    if (neural) {
       // "Warming up my voice" until the first sentence plays (instant when it was prepared).
       setSpeakingId(id);
       setLoadingId(id);
@@ -180,8 +191,7 @@ export function useReadAloud() {
       return;
     }
     speakSystem(id, text);
-    if (neural) nv.warm();
-  }, [synth, neuralOk, systemOk, speakingId, loadingId, clear, speakSystem]);
+  },[synth, neuralOk, systemOk, speakingId, loadingId, clear, speakSystem]);
 
   /** Prepares the speech for a new answer in the background (only once the voice is loaded). */
   const prepare = useCallback((text: string) => { if (neuralOk) neuralVoice().prepare(text); }, [neuralOk]);
